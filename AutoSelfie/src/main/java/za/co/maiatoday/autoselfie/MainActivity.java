@@ -35,8 +35,8 @@ public class MainActivity extends Activity {
      *      * consumer key and secret
      *      *
      */
-    static String TWITTER_CONSUMER_KEY = "NYBbNtTPu1xWMY6PuKx49A";
-    static String TWITTER_CONSUMER_SECRET = "Hkq8aEL9I1Hg5RzTNDymaiAJRqMoYXGHEPMUb2Pnsmw";
+    static String TWITTER_CONSUMER_KEY = "";
+    static String TWITTER_CONSUMER_SECRET = "";
     // Preference Constants
     static String PREFERENCE_NAME = "twitter_oauth";
     static final String PREF_KEY_OAUTH_TOKEN = "oauth_token";
@@ -85,6 +85,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
+        TWITTER_CONSUMER_KEY=getString(R.string.consumer_key);
+        TWITTER_CONSUMER_SECRET=getString(R.string.consumer_secret);
         cd = new ConnectionDetector(getApplicationContext());
 
         // Check if Internet present
