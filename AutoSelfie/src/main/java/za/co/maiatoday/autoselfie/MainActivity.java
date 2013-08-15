@@ -5,6 +5,8 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -17,6 +19,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
+import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
@@ -234,6 +240,16 @@ public class MainActivity extends Activity {
         protected String doInBackground(String... args) {
             Log.d("Tweet Text", "> " + args[0]);
             String status = args[0];
+            final StatusUpdate statusUpdate = new StatusUpdate(args[0]);
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.autoselfie_test);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bm.compress(Bitmap.CompressFormat.PNG, 100, baos);
+//            byte[] imageBytes = baos.toByteArray();
+//            String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+//            // then flip the stream
+            byte[] myTwitterUploadBytes = baos.toByteArray();
+            ByteArrayInputStream bis = new ByteArrayInputStream(myTwitterUploadBytes);
+            statusUpdate.setMedia("#autoselfie", bis);
             try {
                 ConfigurationBuilder builder = new ConfigurationBuilder();
                 builder.setOAuthConsumerKey(TWITTER_CONSUMER_KEY);
@@ -248,7 +264,8 @@ public class MainActivity extends Activity {
                 Twitter twitter = new TwitterFactory(builder.build()).getInstance(accessToken);
 
                 // Update status
-                twitter4j.Status response = twitter.updateStatus(status);
+//                twitter4j.Status response = twitter.updateStatus(status);
+                twitter4j.Status response = twitter.updateStatus(statusUpdate);
 
                 Log.d("Status", "> " + response.getText());
             } catch (TwitterException e) {
