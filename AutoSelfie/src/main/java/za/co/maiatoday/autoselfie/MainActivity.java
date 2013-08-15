@@ -16,11 +16,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
@@ -85,11 +89,17 @@ public class MainActivity extends Activity {
 
     // Alert Dialog Manager
     AlertDialogManager alert = new AlertDialogManager();
+    private static final int REQUEST_CODE = 1;
+    private Bitmap bitmap;
+    private ImageView imageView;
+    Button btnSnap;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        imageView = (ImageView) findViewById(R.id.result);
+        btnSnap = (Button) findViewById(R.id.btnSnap);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         TWITTER_CONSUMER_KEY = getString(R.string.consumer_key);
@@ -174,6 +184,15 @@ public class MainActivity extends Activity {
             }
         });
 
+        btnSnap.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                // Call logout twitter function
+                startGetContentIntent();
+            }
+        });
+
 
     }
 
@@ -241,9 +260,9 @@ public class MainActivity extends Activity {
             Log.d("Tweet Text", "> " + args[0]);
             String status = args[0];
             final StatusUpdate statusUpdate = new StatusUpdate(args[0]);
-            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.autoselfie_test);
+//            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.autoselfie_test);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bm.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
 //            byte[] imageBytes = baos.toByteArray();
 //            String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 //            // then flip the stream
@@ -353,6 +372,32 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        InputStream stream = null;
+        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            try {
+                // We need to recyle unused bitmaps
+                if (bitmap != null) {
+                    bitmap.recycle();
+                }
+                stream = getContentResolver().openInputStream(data.getData());
+                bitmap = BitmapFactory.decodeStream(stream);
+
+                imageView.setImageBitmap(bitmap);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } finally {
+                if (stream != null)
+                    try {
+                        stream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+            }
+        }
+    }
+
     /**
      * AsyncTask to update status
      */
@@ -417,6 +462,15 @@ public class MainActivity extends Activity {
         txtUpdate.setVisibility(View.VISIBLE);
         btnUpdateStatus.setVisibility(View.VISIBLE);
         btnLogoutTwitter.setVisibility(View.VISIBLE);
+    }
+
+    private void startGetContentIntent() {
+
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_CODE);
     }
 
 }
