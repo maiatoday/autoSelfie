@@ -105,6 +105,7 @@ public class MainActivity extends Activity {
     private static final int REQUEST_CONTENT = 1;
     private static final int REQUEST_CAMERA = 2;
     private Bitmap bitmap;
+    private Bitmap bitmap565;
     private ImageView imageView;
     Button btnSnap;
     Button btnGallery;
@@ -146,6 +147,7 @@ public class MainActivity extends Activity {
         txtUpdate = (EditText) findViewById(R.id.txtUpdateStatus);
         lblUpdate = (TextView) findViewById(R.id.lblUpdate);
         lblUserName = (TextView) findViewById(R.id.lblUserName);
+        makeLoggedOutView();
 
         // Shared Preferences
         mSharedPreferences = getApplicationContext().getSharedPreferences(
@@ -304,7 +306,7 @@ public class MainActivity extends Activity {
             final StatusUpdate statusUpdate = new StatusUpdate(args[0]);
 //            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.autoselfie_test);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            bitmap565.compress(Bitmap.CompressFormat.PNG, 100, baos);
 //            byte[] imageBytes = baos.toByteArray();
 //            String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 //            // then flip the stream
@@ -371,14 +373,7 @@ public class MainActivity extends Activity {
         // After this take the appropriate action
         // I am showing the hiding/showing buttons again
         // You might not needed this code
-        btnLogoutTwitter.setVisibility(View.GONE);
-        btnUpdateStatus.setVisibility(View.GONE);
-        txtUpdate.setVisibility(View.GONE);
-        lblUpdate.setVisibility(View.GONE);
-        lblUserName.setText("");
-        lblUserName.setVisibility(View.GONE);
-
-        btnLoginTwitter.setVisibility(View.VISIBLE);
+        makeLoggedOutView();
     }
 
     /**
@@ -391,7 +386,8 @@ public class MainActivity extends Activity {
     }
 
     protected void onResume() {
-        super.onResume();/** This if conditions is tested once is
+        super.onResume();
+        /* This if conditions is tested once is
          * redirected from twitter page. Parse the uri to get oAuth
          * Verifier
          * */
@@ -484,10 +480,28 @@ public class MainActivity extends Activity {
         btnLoginTwitter.setVisibility(View.GONE);
 
         // Show Update Twitter
+        lblUserName.setVisibility(View.VISIBLE);
         lblUpdate.setVisibility(View.VISIBLE);
         txtUpdate.setVisibility(View.VISIBLE);
         btnUpdateStatus.setVisibility(View.VISIBLE);
         btnLogoutTwitter.setVisibility(View.VISIBLE);
+        btnSnap.setVisibility(View.VISIBLE);
+        btnGallery.setVisibility(View.VISIBLE);
+    }
+
+    private void makeLoggedOutView() {
+        // Show login button
+        btnLoginTwitter.setVisibility(View.VISIBLE);
+
+        // Show Update Twitter
+        lblUserName.setText("");
+        lblUserName.setVisibility(View.GONE);
+        lblUpdate.setVisibility(View.GONE);
+        txtUpdate.setVisibility(View.GONE);
+        btnUpdateStatus.setVisibility(View.GONE);
+        btnLogoutTwitter.setVisibility(View.GONE);
+        btnSnap.setVisibility(View.GONE);
+        btnGallery.setVisibility(View.GONE);
     }
 
     private void openGetContentIntent() {
@@ -557,7 +571,7 @@ public class MainActivity extends Activity {
             FaceDetector detector = new FaceDetector(width, height, MainActivity.MAX_FACES);
             FaceDetector.Face[] faces = new FaceDetector.Face[MainActivity.MAX_FACES];
 
-            Bitmap bitmap565 = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+            bitmap565 = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
             Paint ditherPaint = new Paint();
             Paint drawPaint = new Paint();
 
