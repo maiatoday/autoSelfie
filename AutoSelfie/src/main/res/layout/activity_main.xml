@@ -103,6 +103,15 @@
                     android:layout_marginTop="50dip"
                     />
 
+            <Button
+                    android:id="@+id/btnGallery"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="gallery"
+                    android:layout_marginLeft="10dip"
+                    android:layout_marginRight="10dip"
+                    />
+
             <ImageView
                     android:id="@+id/result"
                     android:layout_width="250dp"

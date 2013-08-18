@@ -2,14 +2,23 @@ package za.co.maiatoday.autoselfie;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PointF;
+import android.media.FaceDetector;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
@@ -23,8 +32,10 @@ import android.widget.Toast;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
@@ -49,17 +60,19 @@ public class MainActivity extends Activity {
     static String TWITTER_CONSUMER_KEY = "";
     static String TWITTER_CONSUMER_SECRET = "";
     // Preference Constants
-    static String PREFERENCE_NAME = "twitter_oauth";
+//    static String PREFERENCE_NAME = "twitter_oauth";
     static final String PREF_KEY_OAUTH_TOKEN = "oauth_token";
     static final String PREF_KEY_OAUTH_SECRET = "oauth_token_secret";
-    static final String PREF_KEY_TWITTER_LOGIN = "isTwitterLogedIn";
+    static final String PREF_KEY_TWITTER_LOGIN = "isTwitterLoggedIn";
 
     static final String TWITTER_CALLBACK_URL = "oauth://t4jsample";
 
     // Twitter oauth urls
-    static final String URL_TWITTER_AUTH = "auth_url";
+//    static final String URL_TWITTER_AUTH = "auth_url";
     static final String URL_TWITTER_OAUTH_VERIFIER = "oauth_verifier";
-    static final String URL_TWITTER_OAUTH_TOKEN = "oauth_token";
+//    static final String URL_TWITTER_OAUTH_TOKEN = "oauth_token";
+
+    private static final int MAX_FACES = 5;
 
     // Login button
     Button btnLoginTwitter;
@@ -89,10 +102,12 @@ public class MainActivity extends Activity {
 
     // Alert Dialog Manager
     AlertDialogManager alert = new AlertDialogManager();
-    private static final int REQUEST_CODE = 1;
+    private static final int REQUEST_CONTENT = 1;
+    private static final int REQUEST_CAMERA = 2;
     private Bitmap bitmap;
     private ImageView imageView;
     Button btnSnap;
+    Button btnGallery;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -100,6 +115,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         imageView = (ImageView) findViewById(R.id.result);
         btnSnap = (Button) findViewById(R.id.btnSnap);
+        btnGallery = (Button) findViewById(R.id.btnGallery);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         TWITTER_CONSUMER_KEY = getString(R.string.consumer_key);
@@ -144,11 +160,12 @@ public class MainActivity extends Activity {
             public void onClick(View arg0) {
                 // Call login twitter function
                 loginToTwitter();
+
             }
         });
 
         /**
-         * Button click event to Update Status, will call updateTwitterStatus()
+         * Button click event to Update Status, will call UpdateTwitterStatusTask()
          * function
          * */
         btnUpdateStatus.setOnClickListener(new View.OnClickListener() {
@@ -162,7 +179,7 @@ public class MainActivity extends Activity {
                 // Check for blank text
                 if (status.trim().length() > 0) {
                     // update status
-                    new updateTwitterStatus().execute(status);
+                    new UpdateTwitterStatusTask().execute(status);
                 } else {
                     // EditText is empty
                     Toast.makeText(getApplicationContext(),
@@ -188,8 +205,15 @@ public class MainActivity extends Activity {
 
             @Override
             public void onClick(View arg0) {
-                // Call logout twitter function
-                startGetContentIntent();
+                openCamera();
+            }
+        });
+
+        btnGallery.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                openGetContentIntent();
             }
         });
 
@@ -201,44 +225,62 @@ public class MainActivity extends Activity {
      * Function to login twitter
      */
     private void loginToTwitter() {
-        // Check if already logged in
-        if (!isTwitterLoggedInAlready()) {
-            ConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.setOAuthConsumerKey(TWITTER_CONSUMER_KEY);
-            builder.setOAuthConsumerSecret(TWITTER_CONSUMER_SECRET);
-            Configuration configuration = builder.build();
+        LogInToTwitterTask t = new LogInToTwitterTask();
+        t.execute();
+    }
 
-            TwitterFactory factory = new TwitterFactory(configuration);
-            twitter = factory.getInstance();
+    /**
+     * AsyncTask to update status
+     */
+    class LogInToTwitterTask extends AsyncTask<String, String, String> {
+        @Override
+        protected String doInBackground(String... params) {
+            String result = "";
+            if (!isTwitterLoggedInAlready()) {
+                ConfigurationBuilder builder = new ConfigurationBuilder();
+                builder.setOAuthConsumerKey(TWITTER_CONSUMER_KEY);
+                builder.setOAuthConsumerSecret(TWITTER_CONSUMER_SECRET);
+                Configuration configuration = builder.build();
 
+                TwitterFactory factory = new TwitterFactory(configuration);
+                twitter = factory.getInstance();
 
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
+                try {
 
-                        requestToken = twitter
-                                .getOAuthRequestToken(TWITTER_CALLBACK_URL);
-                        MainActivity.this.startActivity(new Intent(Intent.ACTION_VIEW, Uri
-                                .parse(requestToken.getAuthenticationURL())));
+                    requestToken = twitter
+                            .getOAuthRequestToken(TWITTER_CALLBACK_URL);
+                    MainActivity.this.startActivity(new Intent(Intent.ACTION_VIEW, Uri
+                            .parse(requestToken.getAuthenticationURL())));
+                    result = "ok";
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            });
-            thread.start();
-        } else {
-            // user already logged into twitter
-            Toast.makeText(getApplicationContext(),
-                    "Already Logged into twitter", Toast.LENGTH_LONG).show();
+
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            if (TextUtils.isEmpty(s)) {
+                // user already logged into twitter or error
+                Toast.makeText(getApplicationContext(),
+                        "Problem or already Logged into twitter", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
     /**
      * AsyncTask to update status
      */
-    class updateTwitterStatus extends AsyncTask<String, String, String> {
+    class UpdateTwitterStatusTask extends AsyncTask<String, String, String> {
 
         /**
          * Before starting background thread Show Progress Dialog
@@ -305,16 +347,11 @@ public class MainActivity extends Activity {
             // dismiss the dialog after getting all products
             pDialog.dismiss();
             // updating UI from Background Thread
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),
-                            "Status tweeted successfully", Toast.LENGTH_SHORT)
-                            .show();
-                    // Clearing EditText field
-                    txtUpdate.setText("");
-                }
-            });
+            Toast.makeText(getApplicationContext(),
+                    "Status tweeted successfully", Toast.LENGTH_SHORT)
+                    .show();
+            // Clearing EditText field
+            txtUpdate.setText("");
         }
 
     }
@@ -374,27 +411,16 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        InputStream stream = null;
-        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            try {
-                // We need to recyle unused bitmaps
-                if (bitmap != null) {
-                    bitmap.recycle();
-                }
-                stream = getContentResolver().openInputStream(data.getData());
-                bitmap = BitmapFactory.decodeStream(stream);
-
-                imageView.setImageBitmap(bitmap);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } finally {
-                if (stream != null)
-                    try {
-                        stream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+        if (resultCode == Activity.RESULT_OK) {
+            switch (requestCode) {
+                case REQUEST_CAMERA:
+                    processCameraImage(data);
+                    break;
+                case REQUEST_CONTENT:
+                    processGalleryImage(data);
+                    break;
             }
+            detectFaces();
         }
     }
 
@@ -464,13 +490,133 @@ public class MainActivity extends Activity {
         btnLogoutTwitter.setVisibility(View.VISIBLE);
     }
 
-    private void startGetContentIntent() {
+    private void openGetContentIntent() {
 
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(intent, REQUEST_CODE);
+        startActivityForResult(intent, REQUEST_CONTENT);
     }
 
+    public static boolean isIntentAvailable(Context context, String action) {
+        final PackageManager packageManager = context.getPackageManager();
+        final Intent intent = new Intent(action);
+        List<ResolveInfo> list =
+                packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+        return list.size() > 0;
+    }
+
+    private void openCamera() {
+        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+
+        startActivityForResult(intent, REQUEST_CAMERA);
+    }
+
+    private void processCameraImage(Intent intent) {
+//        setContentView(R.layout.detectlayout);
+
+//        ((Button)findViewById(R.id.detect_face)).setOnClickListener(btnClick);
+
+//        ImageView imageView = (ImageView)findViewById(R.id.image_view);
+
+        bitmap = (Bitmap) intent.getExtras().get("data");
+
+        imageView.setImageBitmap(bitmap);
+    }
+
+    private void processGalleryImage(Intent intent) {
+
+        InputStream stream = null;
+        try {
+            // We need to recycle unused bitmaps
+            if (bitmap != null) {
+                bitmap.recycle();
+            }
+            stream = getContentResolver().openInputStream(intent.getData());
+            bitmap = BitmapFactory.decodeStream(stream);
+
+            imageView.setImageBitmap(bitmap);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            if (stream != null)
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+        }
+    }
+
+    private void detectFaces() {
+        if (null != bitmap) {
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+
+            FaceDetector detector = new FaceDetector(width, height, MainActivity.MAX_FACES);
+            FaceDetector.Face[] faces = new FaceDetector.Face[MainActivity.MAX_FACES];
+
+            Bitmap bitmap565 = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+            Paint ditherPaint = new Paint();
+            Paint drawPaint = new Paint();
+
+            ditherPaint.setDither(true);
+            drawPaint.setColor(Color.BLACK);
+            drawPaint.setStyle(Paint.Style.STROKE);
+            drawPaint.setStrokeWidth(16);
+
+            Canvas canvas = new Canvas();
+            canvas.setBitmap(bitmap565);
+            canvas.drawBitmap(bitmap, 0, 0, ditherPaint);
+
+            int facesFound = detector.findFaces(bitmap565, faces);
+            PointF midPoint = new PointF();
+            float eyeDistance = 0.0f;
+            float confidence = 0.0f;
+
+            Log.i("FaceDetector", "Number of faces found: " + facesFound);
+
+            if (facesFound > 0) {
+                for (int index = 0; index < facesFound; ++index) {
+                    faces[index].getMidPoint(midPoint);
+                    eyeDistance = faces[index].eyesDistance();
+                    confidence = faces[index].confidence();
+
+                    Log.i("FaceDetector",
+                            "Confidence: " + confidence +
+                                    ", Eye distance: " + eyeDistance +
+                                    ", Mid Point: (" + midPoint.x + ", " + midPoint.y + ")");
+
+//                    canvas.drawRect((int)midPoint.x - eyeDistance ,
+//                            (int)midPoint.y - eyeDistance ,
+//                            (int)midPoint.x + eyeDistance,
+//                            (int)midPoint.y + eyeDistance, drawPaint);
+                    canvas.drawLine((int) midPoint.x - eyeDistance,
+                            (int) midPoint.y,
+                            (int) midPoint.x + eyeDistance,
+                            (int) midPoint.y, drawPaint);
+                }
+            }
+
+            String filepath = Environment.getExternalStorageDirectory() + "/facedetect" + System.currentTimeMillis() + ".jpg";
+
+            try {
+                FileOutputStream fos = new FileOutputStream(filepath);
+
+                bitmap565.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+
+                fos.flush();
+                fos.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+//            ImageView imageView = (ImageView)findViewById(R.id.image_view);
+
+            imageView.setImageBitmap(bitmap565);
+        }
+    }
 }
