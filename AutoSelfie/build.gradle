@@ -27,4 +27,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:18.0.+'
     compile files('libs/libGoogleAnalytics.jar')
     compile files('libs/twitter4j-core-3.0.3.jar')
+    compile files('libs/opencvlibrary-2.4.6.jar')
 }
