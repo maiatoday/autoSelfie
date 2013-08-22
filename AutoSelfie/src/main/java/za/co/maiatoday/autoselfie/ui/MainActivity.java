@@ -1,4 +1,4 @@
-package za.co.maiatoday.autoselfie;
+package za.co.maiatoday.autoselfie.ui;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -10,15 +10,9 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PointF;
-import android.media.FaceDetector;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
@@ -32,7 +26,6 @@ import android.widget.Toast;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -46,6 +39,10 @@ import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
+import za.co.maiatoday.autoselfie.R;
+import za.co.maiatoday.autoselfie.util.ConnectionDetector;
+import za.co.maiatoday.autoselfie.util.SelfieStatus;
+
 
 //import com.google.analytics.tracking.android.EasyTracker;
 
@@ -53,12 +50,12 @@ import twitter4j.conf.ConfigurationBuilder;
 public class MainActivity extends Activity {
     //Constants
     /**
-     *      * Register your here app https://dev.twitter.com/apps/new and get your
-     *      * consumer key and secret
-     *      *
+     *   Register your here app https://dev.twitter.com/apps/new and get your
+     *   consumer key and secret
+     *  
      */
-    static String TWITTER_CONSUMER_KEY = "";
-    static String TWITTER_CONSUMER_SECRET = "";
+    String TWITTER_CONSUMER_KEY = "";
+    String TWITTER_CONSUMER_SECRET = "";
     // Preference Constants
 //    static String PREFERENCE_NAME = "twitter_oauth";
     static final String PREF_KEY_OAUTH_TOKEN = "oauth_token";
@@ -72,7 +69,6 @@ public class MainActivity extends Activity {
     static final String URL_TWITTER_OAUTH_VERIFIER = "oauth_verifier";
 //    static final String URL_TWITTER_OAUTH_TOKEN = "oauth_token";
 
-    private static final int MAX_FACES = 5;
 
     // Login button
     Button btnLoginTwitter;
@@ -104,11 +100,11 @@ public class MainActivity extends Activity {
     AlertDialogManager alert = new AlertDialogManager();
     private static final int REQUEST_CONTENT = 1;
     private static final int REQUEST_CAMERA = 2;
-    private Bitmap bitmap;
-    private Bitmap bitmap565;
     private ImageView imageView;
     Button btnSnap;
     Button btnGallery;
+
+    SelfieStatus selfie = new SelfieStatus();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -302,7 +298,8 @@ public class MainActivity extends Activity {
          */
         protected String doInBackground(String... args) {
             Log.d("Tweet Text", "> " + args[0]);
-            String status = args[0];
+            String status = selfie.getStatus();
+            Bitmap bitmap565 = selfie.getBmpToPost();
             final StatusUpdate statusUpdate = new StatusUpdate(args[0]);
 //            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.autoselfie_test);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -416,7 +413,7 @@ public class MainActivity extends Activity {
                     processGalleryImage(data);
                     break;
             }
-            detectFaces();
+            imageView.setImageBitmap(selfie.getBmpToPost()); //TODO only for debug to see result here
         }
     }
 
@@ -534,22 +531,23 @@ public class MainActivity extends Activity {
 
 //        ImageView imageView = (ImageView)findViewById(R.id.image_view);
 
-        bitmap = (Bitmap) intent.getExtras().get("data");
-
+        Bitmap bitmap = (Bitmap) intent.getExtras().get("data");
+        selfie.setOrig(bitmap);
         imageView.setImageBitmap(bitmap);
     }
 
     private void processGalleryImage(Intent intent) {
 
         InputStream stream = null;
+        Bitmap bitmap;
         try {
-            // We need to recycle unused bitmaps
-            if (bitmap != null) {
-                bitmap.recycle();
-            }
+//            // We need to recycle unused bitmaps
+//            if (bitmap != null) {
+//                bitmap.recycle();
+//            }
             stream = getContentResolver().openInputStream(intent.getData());
             bitmap = BitmapFactory.decodeStream(stream);
-
+            selfie.setOrig(bitmap);
             imageView.setImageBitmap(bitmap);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -563,74 +561,5 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void detectFaces() {
-        if (null != bitmap) {
-            int width = bitmap.getWidth();
-            int height = bitmap.getHeight();
 
-            FaceDetector detector = new FaceDetector(width, height, MainActivity.MAX_FACES);
-            FaceDetector.Face[] faces = new FaceDetector.Face[MainActivity.MAX_FACES];
-
-            bitmap565 = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-            Paint ditherPaint = new Paint();
-            Paint drawPaint = new Paint();
-
-            ditherPaint.setDither(true);
-            drawPaint.setColor(Color.BLACK);
-            drawPaint.setStyle(Paint.Style.STROKE);
-            drawPaint.setStrokeWidth(16);
-
-            Canvas canvas = new Canvas();
-            canvas.setBitmap(bitmap565);
-            canvas.drawBitmap(bitmap, 0, 0, ditherPaint);
-
-            int facesFound = detector.findFaces(bitmap565, faces);
-            PointF midPoint = new PointF();
-            float eyeDistance = 0.0f;
-            float confidence = 0.0f;
-
-            Log.i("FaceDetector", "Number of faces found: " + facesFound);
-
-            if (facesFound > 0) {
-                for (int index = 0; index < facesFound; ++index) {
-                    faces[index].getMidPoint(midPoint);
-                    eyeDistance = faces[index].eyesDistance();
-                    confidence = faces[index].confidence();
-
-                    Log.i("FaceDetector",
-                            "Confidence: " + confidence +
-                                    ", Eye distance: " + eyeDistance +
-                                    ", Mid Point: (" + midPoint.x + ", " + midPoint.y + ")");
-
-//                    canvas.drawRect((int)midPoint.x - eyeDistance ,
-//                            (int)midPoint.y - eyeDistance ,
-//                            (int)midPoint.x + eyeDistance,
-//                            (int)midPoint.y + eyeDistance, drawPaint);
-                    canvas.drawLine((int) midPoint.x - eyeDistance,
-                            (int) midPoint.y,
-                            (int) midPoint.x + eyeDistance,
-                            (int) midPoint.y, drawPaint);
-                }
-            }
-
-            String filepath = Environment.getExternalStorageDirectory() + "/facedetect" + System.currentTimeMillis() + ".jpg";
-
-            try {
-                FileOutputStream fos = new FileOutputStream(filepath);
-
-                bitmap565.compress(Bitmap.CompressFormat.JPEG, 90, fos);
-
-                fos.flush();
-                fos.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-//            ImageView imageView = (ImageView)findViewById(R.id.image_view);
-
-            imageView.setImageBitmap(bitmap565);
-        }
-    }
 }

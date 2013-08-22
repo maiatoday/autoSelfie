@@ -1,4 +1,4 @@
-package za.co.maiatoday.autoselfie;
+package za.co.maiatoday.autoselfie.util;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

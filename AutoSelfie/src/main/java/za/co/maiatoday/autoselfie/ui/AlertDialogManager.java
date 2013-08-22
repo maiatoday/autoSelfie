@@ -1,4 +1,4 @@
-package za.co.maiatoday.autoselfie;
+package za.co.maiatoday.autoselfie.ui;
 
 import android.app.AlertDialog;
 import android.content.Context;
