@@ -19,7 +19,7 @@
       </configuration>
     </facet>
   </component>
-  <component name="NewModuleRootManager" inherit-compiler-output="true">
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/build/classes/debug" />
     <exclude-output />
     <content url="file://$MODULE_DIR$">
@@ -72,6 +72,7 @@
     <orderEntry type="library" exported="" name="ComAndroidSupportAppcompatV71800.aar" level="project" />
     <orderEntry type="library" exported="" name="libGoogleAnalytics" level="project" />
     <orderEntry type="library" exported="" name="twitter4j-core-3.0.3" level="project" />
+    <orderEntry type="library" exported="" name="opencvlibrary-2.4.6" level="project" />
   </component>
 </module>
 

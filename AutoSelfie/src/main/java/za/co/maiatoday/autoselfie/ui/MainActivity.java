@@ -23,6 +23,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -48,6 +52,7 @@ import za.co.maiatoday.autoselfie.util.SelfieStatus;
 
 
 public class MainActivity extends Activity {
+    final String TAG = "MainActivity";
     //Constants
     /**
      *   Register your here app https://dev.twitter.com/apps/new and get your
@@ -400,6 +405,7 @@ public class MainActivity extends Activity {
         } else {
             makeLoggedInView();
         }
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
     }
 
     @Override
@@ -562,5 +568,20 @@ public class MainActivity extends Activity {
         }
     }
 
-
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS: {
+                    Log.i(TAG, "OpenCV loaded successfully");
+//                    mOpenCvCameraView.enableView();
+                }
+                break;
+                default: {
+                    super.onManagerConnected(status);
+                }
+                break;
+            }
+        }
+    };
 }
