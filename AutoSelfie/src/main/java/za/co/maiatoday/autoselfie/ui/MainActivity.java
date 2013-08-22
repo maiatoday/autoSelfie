@@ -414,6 +414,7 @@ public class MainActivity extends Activity {
                     break;
             }
             imageView.setImageBitmap(selfie.getBmpToPost()); //TODO only for debug to see result here
+            txtUpdate.setText(selfie.getStatus());
         }
     }
 

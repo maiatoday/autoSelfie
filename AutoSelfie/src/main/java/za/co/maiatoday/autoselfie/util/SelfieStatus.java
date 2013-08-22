@@ -40,7 +40,16 @@ public class SelfieStatus {
     public boolean processSelfie() {
         status = "#autoselfie";
         detectFaces();
+        detectBlobs();
         return true;
+    }
+
+    private void detectBlobs() {
+
+//        BlobDetection blob = new BlobDetection(orig);
+//        Bitmap b = BlobDetection.decreaseColorDepth(orig,8);
+//        bmpToPost = blob.getBlob(b);
+//        status += " " + blob.blobList.size();
     }
 
     private void detectFaces() {
