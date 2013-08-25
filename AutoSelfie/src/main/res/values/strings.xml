@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">AutoSelfie</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_info">Info</string>
     <string name="hello_world">Hello world!</string>
 
 </resources>

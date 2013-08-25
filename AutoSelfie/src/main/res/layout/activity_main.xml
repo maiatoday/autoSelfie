@@ -17,24 +17,36 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-                 
-                <!-- Twitter Login Button -->
-                
 
-            <Button
-                    android:id="@+id/btnLoginTwitter"
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                <Button
+                        android:id="@+id/btnSnap"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="camera"
+                        />
+
+                <Button
+                        android:id="@+id/btnGallery"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="gallery"
+                        />
+            </LinearLayout>
+
+            <ImageView
+                    android:id="@+id/result"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:text="Login with Twitter"
-                    android:layout_marginTop="30dip"/>
-
-            <Button
-                    android:id="@+id/btnLogoutTwitter"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Logout from Twitter"
-                    />
-                
+                    android:layout_gravity="center_horizontal"
+                    android:scaleType="centerCrop"
+                    android:background="@drawable/autoselfie_test"/>
 
             <TextView
                     android:id="@+id/lblUserName"
@@ -45,7 +57,8 @@
                     android:id="@+id/lblUpdate"
                     android:text="Update Status"
                     android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"/>
                 
 
             <EditText
@@ -60,30 +73,6 @@
                     android:layout_height="wrap_content"
                     android:text="Tweet"
                     />
-               
-
-            <Button
-                    android:id="@+id/btnSnap"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:text="camera"
-                    android:layout_marginTop="20dip"
-                    />
-
-            <Button
-                    android:id="@+id/btnGallery"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:text="gallery"
-                    />
-
-            <ImageView
-                    android:id="@+id/result"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:scaleType="centerCrop"
-                    android:background="@drawable/autoselfie_test"/>
         </LinearLayout>
 
     </RelativeLayout>
