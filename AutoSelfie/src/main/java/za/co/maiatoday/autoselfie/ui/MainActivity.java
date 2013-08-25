@@ -75,7 +75,7 @@ public class MainActivity extends ActionBarActivity {
     // Update status button
     Button btnUpdateStatus;
     // EditText for update
-    EditText txtUpdate;
+    TextView txtUpdate;
     // lbl update
     TextView lblUpdate;
 
@@ -131,6 +131,7 @@ public class MainActivity extends ActionBarActivity {
         // All UI elements
         btnUpdateStatus = (Button) findViewById(R.id.btnUpdateStatus);
         txtUpdate = (EditText) findViewById(R.id.txtUpdateStatus);
+        txtUpdate.setEnabled(false);
         lblUpdate = (TextView) findViewById(R.id.lblUpdate);
 
         // Shared Preferences
