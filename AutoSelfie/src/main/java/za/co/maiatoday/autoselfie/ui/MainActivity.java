@@ -22,7 +22,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -130,7 +129,7 @@ public class MainActivity extends ActionBarActivity {
 
         // All UI elements
         btnUpdateStatus = (Button) findViewById(R.id.btnUpdateStatus);
-        txtUpdate = (EditText) findViewById(R.id.txtUpdateStatus);
+        txtUpdate = (TextView) findViewById(R.id.txtUpdateStatus);
         txtUpdate.setEnabled(false);
         lblUpdate = (TextView) findViewById(R.id.lblUpdate);
 
