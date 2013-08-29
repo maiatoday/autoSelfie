@@ -49,7 +49,7 @@ import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 import za.co.maiatoday.autoselfie.R;
 import za.co.maiatoday.autoselfie.util.ConnectionDetector;
-import za.co.maiatoday.autoselfie.util.MiscUtils;
+import za.co.maiatoday.autoselfie.util.ImageUtils;
 import za.co.maiatoday.autoselfie.util.SelfieStatus;
 
 
@@ -263,7 +263,7 @@ public class MainActivity extends ActionBarActivity {
 // Determine Uri of camera image to save.
         final File root = new File(Environment.getExternalStorageDirectory() + File.separator + "autoSelfie" + File.separator);
         root.mkdirs();
-        final String fname = MiscUtils.getUniqueImageFilename();
+        final String fname = ImageUtils.getUniqueImageFilename();
         final File sdImageMainDirectory = new File(root, fname);
         outputFileUri = Uri.fromFile(sdImageMainDirectory);
 
@@ -320,9 +320,12 @@ public class MainActivity extends ActionBarActivity {
             selectedImageUri = data == null ? null : data.getData();
         }
         try {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
-            selfie.setOrig(bitmap);
-            imageView.setImageBitmap(bitmap);
+//            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
+            Bitmap bitmap = ImageUtils.getSizedBitmap(this, selectedImageUri, imageView.getWidth());
+            if (bitmap != null) {
+                selfie.setOrig(bitmap);
+                imageView.setImageBitmap(bitmap);
+            }
         } catch (Exception e) {
 
             Toast.makeText(getApplicationContext(),
