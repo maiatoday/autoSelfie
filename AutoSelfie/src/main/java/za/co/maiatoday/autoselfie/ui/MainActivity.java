@@ -321,7 +321,7 @@ public class MainActivity extends ActionBarActivity {
         }
         try {
 //            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
-            Bitmap bitmap = ImageUtils.getSizedBitmap(this, selectedImageUri, imageView.getWidth());
+            Bitmap bitmap = ImageUtils.getSizedBitmap(this, selectedImageUri, imageView.getHeight());
             if (bitmap != null) {
                 selfie.setOrig(bitmap);
                 imageView.setImageBitmap(bitmap);

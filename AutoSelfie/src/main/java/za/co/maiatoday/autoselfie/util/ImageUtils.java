@@ -8,6 +8,8 @@ import android.net.Uri;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Utility class for image related methods.
@@ -16,7 +18,10 @@ import java.io.InputStream;
 public class ImageUtils {
 
     public static String getUniqueImageFilename() {
-        return "temp.jpg";
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+        Date now = new Date();
+        String fileName = formatter.format(now) + ".jpg";
+        return fileName;
     }
 
     public static Bitmap getSizedBitmap(Context context, Uri uri, int size) throws FileNotFoundException, IOException {
@@ -33,7 +38,7 @@ public class ImageUtils {
 
         int originalSize = (onlyBoundsOptions.outHeight > onlyBoundsOptions.outWidth) ? onlyBoundsOptions.outHeight : onlyBoundsOptions.outWidth;
 
-        double ratio = (originalSize > size) ? (originalSize / size) : 1.0;
+        double ratio = (originalSize > size) ? (originalSize / (double) size) : 1.0;
 
         BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
         bitmapOptions.inSampleSize = getPowerOfTwoForSampleRatio(ratio);
