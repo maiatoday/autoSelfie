@@ -44,30 +44,33 @@ import za.co.maiatoday.autoselfie.util.SelfieStatus;
 
 public class MainActivity extends ActionBarActivity implements OnTwitterRequest {
     final String TAG = "MainActivity";
-    //Constants
-    // Progress dialog
-    ProgressDialog pDialog;
     // Internet Connection detector
     private ConnectionDetector cd;
+    // Progress dialog
+    ProgressDialog pDialog;
 
     // Alert Dialog Manager
     AlertDialogManager alert = new AlertDialogManager();
     // Shared Preferences
     private static SharedPreferences mSharedPreferences;
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mSharedPreferences = getSharedPreferences(PREF_NAME, 0);
+        // Start the first fragment.
         // However, if we're being restored from a previous state,
         // then we don't need to do anything and should return or else
         // we could end up with overlapping fragments.
         if (savedInstanceState == null) {
             if (findViewById(R.id.fragment_container) != null) {
-
-                // Create an instance of ExampleFragment
-                MainFragment firstFragment = new MainFragment();
+                Fragment firstFragment;
+                if (isTwitterLoggedInAlready()) {
+                    firstFragment = new MainFragment();
+                } else {
+                    firstFragment = new InfoFragment();
+                }
 
                 // In case this activity was started with special instructions from an Intent,
                 // pass the Intent's extras to the fragment as arguments
@@ -79,8 +82,6 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             }
         }
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);    // Shared Preferences
-        mSharedPreferences = getSharedPreferences(
-                PREF_NAME, 0);
 
         TWITTER_CONSUMER_KEY = getString(R.string.consumer_key);
         TWITTER_CONSUMER_SECRET = getString(R.string.consumer_secret);
