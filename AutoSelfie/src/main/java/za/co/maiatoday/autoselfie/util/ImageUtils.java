@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -24,7 +23,7 @@ public class ImageUtils {
         return fileName;
     }
 
-    public static Bitmap getSizedBitmap(Context context, Uri uri, int size) throws FileNotFoundException, IOException {
+    public static Bitmap getSizedBitmap(Context context, Uri uri, int size) throws IOException {
         InputStream input = context.getContentResolver().openInputStream(uri);
 
         BitmapFactory.Options onlyBoundsOptions = new BitmapFactory.Options();
@@ -33,12 +32,12 @@ public class ImageUtils {
         onlyBoundsOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;//optional
         BitmapFactory.decodeStream(input, null, onlyBoundsOptions);
         input.close();
-        if ((onlyBoundsOptions.outWidth == -1) || (onlyBoundsOptions.outHeight == -1))
+        if (onlyBoundsOptions.outWidth == -1 || onlyBoundsOptions.outHeight == -1)
             return null;
 
-        int originalSize = (onlyBoundsOptions.outHeight > onlyBoundsOptions.outWidth) ? onlyBoundsOptions.outHeight : onlyBoundsOptions.outWidth;
+        int originalSize = onlyBoundsOptions.outHeight > onlyBoundsOptions.outWidth ? onlyBoundsOptions.outHeight : onlyBoundsOptions.outWidth;
 
-        double ratio = (originalSize > size) ? (originalSize / (double) size) : 1.0;
+        double ratio = originalSize > size ? originalSize / (double) size : 1.0;
 
         BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
         bitmapOptions.inSampleSize = getPowerOfTwoForSampleRatio(ratio);

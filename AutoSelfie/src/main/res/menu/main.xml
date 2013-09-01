@@ -1,8 +1,10 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:appcompat="http://schemas.android.com/apk/res-auto">
     <item
             android:id="@+id/action_info"
             android:title="@string/action_info"
             android:orderInCategory="100"
             android:icon="@drawable/action_about"
-            android:showAsAction="always"/>
+            android:showAsAction="always"
+            appcompat:showAsAction="always"/>
 </menu>
