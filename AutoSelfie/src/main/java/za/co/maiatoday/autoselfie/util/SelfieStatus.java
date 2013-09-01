@@ -130,11 +130,12 @@ public class SelfieStatus {
 
     private void firstTryOpenCV() {
         mRgba = new Mat();
+        mRgbaInnerWindow = null;
         mIntermediateMat = new Mat();
         Utils.bitmapToMat(orig, mRgba);
 
-        if ((mRgbaInnerWindow == null) || (mGrayInnerWindow == null) || (mRgba.cols() != mSizeRgba.width) || (mRgba.height() != mSizeRgba.height))
-            createAuxiliaryMats();
+//        if ((mRgbaInnerWindow == null) || (mGrayInnerWindow == null) || (mRgba.cols() != mSizeRgba.width) || (mRgba.height() != mSizeRgba.height))
+        createAuxiliaryMats();
         Imgproc.Canny(mRgbaInnerWindow, mIntermediateMat, 80, 90);
         Imgproc.cvtColor(mIntermediateMat, mRgbaInnerWindow, Imgproc.COLOR_GRAY2BGRA, 4);
 
