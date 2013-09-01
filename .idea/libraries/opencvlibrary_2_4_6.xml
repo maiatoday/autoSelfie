@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="opencvlibrary-2.4.6">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/AutoSelfie/libs/opencvlibrary-2.4.6.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

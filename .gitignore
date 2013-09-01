@@ -20,7 +20,6 @@ local.properties
 .project
 
 # Android Studio
-.idea/
 .gradle
 local.properties
 */build
