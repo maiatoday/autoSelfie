@@ -40,17 +40,9 @@ public class SelfieStatus {
     public boolean processSelfie() {
         status = "#autoselfie";
         detectFaces();
-        detectBlobs();
         return true;
     }
 
-    private void detectBlobs() {
-
-//        BlobDetection blob = new BlobDetection(orig);
-//        Bitmap b = BlobDetection.decreaseColorDepth(orig,8);
-//        bmpToPost = blob.getBlob(b);
-//        status += " " + blob.blobList.size();
-    }
 
     private void detectFaces() {
         if (null != orig) {
@@ -67,7 +59,7 @@ public class SelfieStatus {
             ditherPaint.setDither(true);
             drawPaint.setColor(Color.BLACK);
             drawPaint.setStyle(Paint.Style.STROKE);
-            drawPaint.setStrokeWidth(16);
+            drawPaint.setStrokeWidth(bmpToPost.getWidth() / 8);
 
             Canvas canvas = new Canvas();
             canvas.setBitmap(bmpToPost);

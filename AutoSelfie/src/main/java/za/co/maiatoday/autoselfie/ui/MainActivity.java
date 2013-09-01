@@ -354,7 +354,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     public void updateStatus(SelfieStatus status) {
         selfie = status;
         UpdateTwitterStatusTask t = new UpdateTwitterStatusTask();
-        t.execute();
+        t.execute(selfie.getStatus());
     }
 
     /**
