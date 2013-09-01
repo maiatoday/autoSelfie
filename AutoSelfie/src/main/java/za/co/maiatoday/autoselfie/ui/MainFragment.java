@@ -68,19 +68,20 @@ public class MainFragment extends Fragment {   // Update status button
             public void onClick(View v) {
                 // Call update status function
                 // Get the status from EditText
-                String status = txtUpdate.getText().toString();
+//                String status = txtUpdate.getText().toString();
 
                 // Check for blank text
-                if (status.trim().length() > 0) {
-
-                    OnTwitterRequest activity = (OnTwitterRequest) getActivity();
-                    activity.updateStatus(selfie);
-                } else {
-                    // EditText is empty
-                    Toast.makeText(getActivity(),
-                            "Please enter status message", Toast.LENGTH_SHORT)
-                            .show();
-                }
+//                if (status.trim().length() > 0) {
+                selfie.processSelfie();
+                imageView.setImageBitmap(selfie.getBmpToPost()); //TODO only for debug to see result here
+                OnTwitterRequest activity = (OnTwitterRequest) getActivity();
+                activity.updateStatus(selfie);
+//                } else {
+//                    // EditText is empty
+//                    Toast.makeText(getActivity(),
+//                            "Please enter status message", Toast.LENGTH_SHORT)
+//                            .show();
+//                }
             }
         });
 
@@ -189,7 +190,6 @@ public class MainFragment extends Fragment {   // Update status button
             selectedImageUri = data == null ? null : data.getData();
         }
         try {
-//            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
             Bitmap bitmap = ImageUtils.getSizedBitmap(getActivity(), selectedImageUri, imageView.getHeight());
             if (bitmap != null) {
                 selfie.setOrig(bitmap);

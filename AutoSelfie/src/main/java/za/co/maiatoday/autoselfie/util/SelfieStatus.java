@@ -6,12 +6,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.media.FaceDetector;
-import android.os.Environment;
 import android.util.Log;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 /**
  * Created by maia on 2013/08/22.
@@ -23,9 +23,15 @@ public class SelfieStatus {
 
     private static final int MAX_FACES = 5;
 
+    void SelfieStatus() {
+
+        mIntermediateMat = new Mat();
+        createAuxiliaryMats();
+    }
+
     public void setOrig(Bitmap orig) {
         this.orig = orig;
-        processSelfie();
+        this.bmpToPost = orig;
     }
 
     public Bitmap getBmpToPost() {
@@ -40,6 +46,15 @@ public class SelfieStatus {
     public boolean processSelfie() {
         status = "#autoselfie";
         detectFaces();
+//        //choose another algorithm
+//        Random r = new Random();
+//        int i1=r.nextInt(5);
+//        switch (i1) {
+//            case 0:
+//                break;
+//        }
+        firstTryOpenCV();
+
         return true;
     }
 
@@ -94,22 +109,79 @@ public class SelfieStatus {
                 }
             }
 
-            String filepath = Environment.getExternalStorageDirectory() + "/facedetect" + System.currentTimeMillis() + ".jpg";
-
-            try {
-                FileOutputStream fos = new FileOutputStream(filepath);
-
-                bmpToPost.compress(Bitmap.CompressFormat.JPEG, 90, fos);
-
-                fos.flush();
-                fos.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+//            String filepath = Environment.getExternalStorageDirectory() + "/facedetect" + System.currentTimeMillis() + ".jpg";
+//
+//            try {
+//                FileOutputStream fos = new FileOutputStream(filepath);
+//
+//                bmpToPost.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+//
+//                fos.flush();
+//                fos.close();
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
 
 
         }
+    }
+
+    private void firstTryOpenCV() {
+        mRgba = new Mat();
+        mIntermediateMat = new Mat();
+        Utils.bitmapToMat(orig, mRgba);
+
+        if ((mRgbaInnerWindow == null) || (mGrayInnerWindow == null) || (mRgba.cols() != mSizeRgba.width) || (mRgba.height() != mSizeRgba.height))
+            createAuxiliaryMats();
+        Imgproc.Canny(mRgbaInnerWindow, mIntermediateMat, 80, 90);
+        Imgproc.cvtColor(mIntermediateMat, mRgbaInnerWindow, Imgproc.COLOR_GRAY2BGRA, 4);
+
+        Utils.matToBitmap(mRgba, bmpToPost);
+
+        status = "#autoselfie first openCV canny filter";
+
+    }
+
+    private Size mSize0;
+    private Size mSizeRgba;
+    private Size mSizeRgbaInner;
+    private Mat mRgba;
+    private Mat mGray;
+    private Mat mIntermediateMat;
+    private Mat mRgbaInnerWindow;
+    private Mat mGrayInnerWindow;
+    private Mat mZoomWindow;
+    private Mat mZoomCorner;
+    private Mat mSepiaKernel;
+
+    private void createAuxiliaryMats() {
+        if (mRgba.empty())
+            return;
+
+        mSizeRgba = mRgba.size();
+
+        int rows = (int) mSizeRgba.height;
+        int cols = (int) mSizeRgba.width;
+
+        int left = cols / 8;
+        int top = rows / 8;
+
+        int width = cols * 3 / 4;
+        int height = rows * 3 / 4;
+
+        if (mRgbaInnerWindow == null)
+            mRgbaInnerWindow = mRgba.submat(top, top + height, left, left + width);
+        mSizeRgbaInner = mRgbaInnerWindow.size();
+
+//        if (mGrayInnerWindow == null && !mGray.empty())
+//            mGrayInnerWindow = mGray.submat(top, top + height, left, left + width);
+//
+//        if (mZoomCorner == null)
+//            mZoomCorner = mRgba.submat(0, rows / 2 - rows / 10, 0, cols / 2 - cols / 10);
+//
+//        if (mZoomWindow == null)
+//            mZoomWindow = mRgba.submat(rows / 2 - 9 * rows / 100, rows / 2 + 9 * rows / 100, cols / 2 - 9 * cols / 100, cols / 2 + 9 * cols / 100);
     }
 }

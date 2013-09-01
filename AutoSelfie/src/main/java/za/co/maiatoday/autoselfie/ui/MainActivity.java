@@ -53,6 +53,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     AlertDialogManager alert = new AlertDialogManager();
     // Shared Preferences
     private static SharedPreferences mSharedPreferences;
+    private boolean disableTweet = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -353,8 +354,10 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     @Override
     public void updateStatus(SelfieStatus status) {
         selfie = status;
-        UpdateTwitterStatusTask t = new UpdateTwitterStatusTask();
-        t.execute(selfie.getStatus());
+        if (!disableTweet) {
+            UpdateTwitterStatusTask t = new UpdateTwitterStatusTask();
+            t.execute(selfie.getStatus());
+        }
     }
 
     /**
