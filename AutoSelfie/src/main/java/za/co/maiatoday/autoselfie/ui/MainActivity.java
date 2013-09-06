@@ -26,9 +26,6 @@ import java.io.ByteArrayOutputStream;
 import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
-import twitter4j.auth.AccessToken;
-import twitter4j.conf.ConfigurationBuilder;
 import za.co.maiatoday.autoselfie.R;
 import za.co.maiatoday.autoselfie.preferences.Prefs;
 import za.co.maiatoday.autoselfie.util.ConnectionDetector;
@@ -39,6 +36,7 @@ import za.co.maiatoday.autoselfie.util.TwitterHelper;
 public class MainActivity extends ActionBarActivity implements OnTwitterRequest {
     private static final String MAIN_FRAGMENT = "main";
     private static final String INFO_FRAGMENT = "info";
+    private static final String AUTH_FRAGMENT = "authDialog";
     final String TAG = "MainActivity";
     // Internet Connection detector
     private ConnectionDetector cd;
@@ -49,7 +47,6 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     AlertDialogManager alert = new AlertDialogManager();
     // Shared Preferences
     private static SharedPreferences mSharedPreferences;
-    private boolean disableTweet = false;
     private TwitterHelper twitHelper;
 
     @Override
@@ -253,7 +250,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         // Create and show the dialog.
         OAuthFragment newFragment = new OAuthFragment();
         newFragment.setTwitterHelper(this.twitHelper);
-        newFragment.show(ft, "dialog");
+        newFragment.show(ft, AUTH_FRAGMENT);
     }
 
 
@@ -289,20 +286,10 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
                         "Problem or already Logged into twitter", Toast.LENGTH_LONG).show();
             } else {
                 Log.d(TAG, "startActivity oauth intent");
-//                Intent intent = new Intent(Intent.ACTION_VIEW, Uri
-//                        .parse(requestToken.getAuthenticationURL()));
-////                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-//                intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
-//                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-//                MainActivity.this.startActivity(intent);
-//                MainActivity.this.finish();
                 showAuthDialog();
             }
         }
     }
-
 
 
     private void tellFragmentsTwitterStatus(boolean loggedIn) {
@@ -332,10 +319,8 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     @Override
     public void updateStatus(SelfieStatus status) {
         selfie = status;
-        if (!disableTweet) {
-            UpdateTwitterStatusTask t = new UpdateTwitterStatusTask();
-            t.execute(selfie.getStatus());
-        }
+        UpdateTwitterStatusTask t = new UpdateTwitterStatusTask();
+        t.execute(selfie.getStatus());
     }
 
     @Override
@@ -366,10 +351,10 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
          * getting Places JSON
          */
         protected String doInBackground(String... args) {
-            Log.d("Tweet Text", "> " + args[0]);
             String status = selfie.getStatus();
+            Log.d("Tweet Text", "> " + status);
             Bitmap bitmap565 = selfie.getBmpToPost();
-            final StatusUpdate statusUpdate = new StatusUpdate(args[0]);
+            final StatusUpdate statusUpdate = new StatusUpdate(status);
 //            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.autoselfie_test);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bitmap565.compress(Bitmap.CompressFormat.PNG, 100, baos);
@@ -380,20 +365,13 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             ByteArrayInputStream bis = new ByteArrayInputStream(myTwitterUploadBytes);
             statusUpdate.setMedia("#autoselfie", bis);
             try {
-                ConfigurationBuilder builder = new ConfigurationBuilder();
-                builder.setOAuthConsumerKey(TwitterHelper.TWITTER_CONSUMER_KEY);
-                builder.setOAuthConsumerSecret(TwitterHelper.TWITTER_CONSUMER_SECRET);
-
                 // Access Token
                 String access_token = mSharedPreferences.getString(Prefs.PREF_KEY_OAUTH_TOKEN, "");
                 // Access Token Secret
                 String access_token_secret = mSharedPreferences.getString(Prefs.PREF_KEY_OAUTH_SECRET, "");
-
-                AccessToken accessToken = new AccessToken(access_token, access_token_secret);
-                Twitter twitter = new TwitterFactory(builder.build()).getInstance(accessToken);
+                Twitter twitter = twitHelper.setupTwitter(access_token, access_token_secret);
 
                 // Update status
-//                twitter4j.Status response = twitter.updateStatus(status);
                 twitter4j.Status response = twitter.updateStatus(statusUpdate);
 
                 Log.d("Status", "> " + response.getText());

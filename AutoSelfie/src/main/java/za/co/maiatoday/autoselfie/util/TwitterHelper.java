@@ -15,9 +15,9 @@ import za.co.maiatoday.autoselfie.R;
  * Created by maia on 2013/09/06.
  */
 public class TwitterHelper {
-    public RequestToken getRequestToken() {
-        return requestToken;
-    }
+
+    private boolean disableTweet = false;
+
 
     /**
      *   Register your here app https://dev.twitter.com/apps/new and get your
@@ -29,6 +29,8 @@ public class TwitterHelper {
     private Twitter twitter;
     public static final String TWITTER_CALLBACK_URL = "oauth://t4jsample";
     public static final String URL_TWITTER_OAUTH_VERIFIER = "oauth_verifier";
+    private String accessTokenString;
+    private String accessSecretString;
 
     public Twitter getTwitter() {
         if (twitter == null) {
@@ -37,14 +39,22 @@ public class TwitterHelper {
         return twitter;
     }
 
+    // Twitter
+
+    public void setAccessToken(String token, String secret) {
+        this.accessToken = new AccessToken(token, secret);
+    }
+
+    private AccessToken accessToken;
+    private RequestToken requestToken;
+
     public AccessToken getAccessToken() {
         return accessToken;
     }
 
-    // Twitter
-    private AccessToken accessToken;
-    private RequestToken requestToken;
-
+    public RequestToken getRequestToken() {
+        return requestToken;
+    }
 
     public TwitterHelper(Context context) {
         TWITTER_CONSUMER_KEY = context.getString(R.string.consumer_key);
@@ -71,6 +81,23 @@ public class TwitterHelper {
 
         TwitterFactory factory = new TwitterFactory(configuration);
         twitter = factory.getInstance();
+    }
+
+    /**
+     * setup the twitter factory with the correct key and secret configuration
+     *
+     * @return Twitter instance
+     */
+    public Twitter setupTwitter(String accessToken, String accessSecret) {
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder.setOAuthConsumerKey(TWITTER_CONSUMER_KEY);
+        builder.setOAuthConsumerSecret(TWITTER_CONSUMER_SECRET);
+        Configuration configuration = builder.build();
+
+        TwitterFactory factory = new TwitterFactory(configuration);
+        setAccessToken(accessToken, accessSecret);
+        twitter = factory.getInstance(this.accessToken);
+        return twitter;
     }
 
     public boolean setupRequestToken() {

@@ -121,7 +121,8 @@ public class OAuthFragment extends DialogFragment {
 
                 Log.d("Twitter OAuth Token", "> " + twitHelper.getAccessToken().getToken());
 
-
+                OnTwitterRequest activity = (OnTwitterRequest) getActivity();
+                activity.checkTwitterLoginState();
                 // Getting user details from twitter
                 // For now i am getting his name only
                 long userID = twitHelper.getAccessToken().getUserId();
