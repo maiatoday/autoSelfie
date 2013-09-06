@@ -19,7 +19,7 @@ import static za.co.maiatoday.autoselfie.ui.MainActivity.PREF_NAME;
 /**
  * Created by maia on 2013/09/01.
  */
-public class InfoFragment extends Fragment {
+public class InfoFragment extends Fragment implements OnTwitterLoginChanged {
     // Login button
     Button btnLoginTwitter;
     // Logout button
@@ -109,4 +109,8 @@ public class InfoFragment extends Fragment {
         btnLogoutTwitter.setVisibility(isLoggedIn ? View.VISIBLE : View.GONE);
     }
 
+    @Override
+    public void twitterLoggedIn(boolean loggedIn) {
+        setButtonsView();
+    }
 }

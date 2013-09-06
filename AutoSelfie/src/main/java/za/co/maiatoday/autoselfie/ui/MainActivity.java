@@ -38,6 +38,8 @@ import za.co.maiatoday.autoselfie.util.SelfieStatus;
 
 
 public class MainActivity extends ActionBarActivity implements OnTwitterRequest {
+    private static final String MAIN_FRAGMENT = "main";
+    private static final String INFO_FRAGMENT = "info";
     final String TAG = "MainActivity";
     // Internet Connection detector
     private ConnectionDetector cd;
@@ -52,9 +54,11 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mSharedPreferences = getSharedPreferences(PREF_NAME, 0);
+        boolean showLogin = getOauthTokenFromIntent();
         // Start the first fragment.
         // However, if we're being restored from a previous state,
         // then we don't need to do anything and should return or else
@@ -62,10 +66,13 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         if (savedInstanceState == null) {
             if (findViewById(R.id.fragment_container) != null) {
                 Fragment firstFragment;
-                if (isTwitterLoggedInAlready()) {
-                    firstFragment = new MainFragment();
-                } else {
+                String tag;
+                if (showLogin) {
                     firstFragment = new InfoFragment();
+                    tag = INFO_FRAGMENT;
+                } else {
+                    firstFragment = new MainFragment();
+                    tag = MAIN_FRAGMENT;
                 }
 
                 // In case this activity was started with special instructions from an Intent,
@@ -74,7 +81,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
 
                 // Add the fragment to the 'fragment_container' FrameLayout
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.fragment_container, firstFragment).commit();
+                        .add(R.id.fragment_container, firstFragment, tag).commit();
             }
         }
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);    // Shared Preferences
@@ -115,27 +122,67 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
 
     @Override
     protected void onResume() {
+        Log.d(TAG, "onResume");
         super.onResume();
-          /* This if conditions is tested once is
-         * redirected from twitter page. Parse the uri to get oAuth
-         * Verifier
-         * */
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+
+        Log.d(TAG, "onNewIntent");
+        super.onNewIntent(intent);
+
+    }
+
+    private boolean getOauthTokenFromIntent() {
+        boolean showLoginFragment = false;
+    /* This if conditions is tested once is
+     * redirected from twitter page. Parse the uri to get oAuth
+     * Verifier
+     * */
         if (!isTwitterLoggedInAlready()) {
             Uri uri = getIntent().getData();
             if (uri != null && uri.toString().startsWith(TWITTER_CALLBACK_URL)) {
                 // oAuth verifier
                 final String verifier = uri
                         .getQueryParameter(URL_TWITTER_OAUTH_VERIFIER);
+                Log.d(TAG, "Got oAuth verifier URI");
                 new GetAccessTokenTask().execute(verifier);
 
+            } else {
+                showLoginFragment = true;
             }
         }
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
+        return showLoginFragment;
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    protected void onStart() {
+
+        Log.d(TAG, "onStart");
+        super.onStart();
+    }
+
+    @Override
+    protected void onPause() {
+
+        Log.d(TAG, "onPause");
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+
+        Log.d(TAG, "onStop");
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        Log.d(TAG, "onDestroy");
+        super.onDestroy();
     }
 
     /**
@@ -149,7 +196,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         InfoFragment newFragment = new InfoFragment();
         Bundle args = new Bundle();
         newFragment.setArguments(args);
-        switchFragment(newFragment, true);
+        switchFragment(newFragment, true, INFO_FRAGMENT);
     }
 
     private void switchToMainFragment() {
@@ -162,16 +209,16 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             // pass the Intent's extras to the fragment as arguments
             newFragment.setArguments(getIntent().getExtras());
 
-            switchFragment(newFragment, false);
+            switchFragment(newFragment, false, MAIN_FRAGMENT);
         }
 
     }
 
-    private void switchFragment(Fragment newFragment, boolean addToBackStack) {
+    private void switchFragment(Fragment newFragment, boolean addToBackStack, String tag) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
         // Add the fragment to the 'fragment_container' FrameLayout
-        transaction.replace(R.id.fragment_container, newFragment);
+        transaction.replace(R.id.fragment_container, newFragment, tag);
         if (addToBackStack) {
             transaction.addToBackStack(null);
         }
@@ -181,7 +228,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     }
 
 
-    //-------------- image code ----------------
+    //-------------- opencv test for manager code ----------------
     final private LoaderCallbackInterface mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -243,8 +290,6 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
 
                     requestToken = twitter
                             .getOAuthRequestToken(TWITTER_CALLBACK_URL);
-                    MainActivity.this.startActivity(new Intent(Intent.ACTION_VIEW, Uri
-                            .parse(requestToken.getAuthenticationURL())));
                     result = "ok";
 
                 } catch (Exception e) {
@@ -263,10 +308,22 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+
             if (TextUtils.isEmpty(s)) {
                 // user already logged into twitter or error
                 Toast.makeText(getApplicationContext(),
                         "Problem or already Logged into twitter", Toast.LENGTH_LONG).show();
+            } else {
+                Log.d(TAG, "startActivity oauth intent");
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri
+                        .parse(requestToken.getAuthenticationURL()));
+//                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+                MainActivity.this.startActivity(intent);
+                MainActivity.this.finish();
             }
         }
     }
@@ -312,8 +369,9 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
                 e.putBoolean(PREF_KEY_TWITTER_LOGIN, true);
                 e.commit(); // save changes
 
-                Log.e("Twitter OAuth Token", "> " + accessToken.getToken());
+                Log.d("Twitter OAuth Token", "> " + accessToken.getToken());
 
+                MainActivity.this.tellFragmentsTwitterStatus(true);
                 // Getting user details from twitter
                 // For now i am getting his name only
                 long userID = accessToken.getUserId();
@@ -326,6 +384,18 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
 
             }
         }
+    }
+
+    private void tellFragmentsTwitterStatus(boolean loggedIn) {
+        Log.d(TAG, "twitter logged in " + loggedIn);
+        OnTwitterLoginChanged fragment = (OnTwitterLoginChanged) getSupportFragmentManager().findFragmentByTag(MAIN_FRAGMENT);
+        if (fragment == null) {
+            fragment = (OnTwitterLoginChanged) getSupportFragmentManager().findFragmentByTag(INFO_FRAGMENT);
+        }
+        if (fragment != null) {
+            fragment.twitterLoggedIn(loggedIn);
+        }
+
     }
 
     /**
