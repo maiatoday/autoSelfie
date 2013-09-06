@@ -13,4 +13,6 @@ public interface OnTwitterRequest {
 
     void updateStatus(SelfieStatus status);
 
+    void checkTwitterLoginState();
+
 }

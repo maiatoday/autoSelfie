@@ -13,11 +13,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import twitter4j.Twitter;
-import twitter4j.TwitterFactory;
 import twitter4j.User;
-import twitter4j.conf.Configuration;
-import twitter4j.conf.ConfigurationBuilder;
 import za.co.maiatoday.autoselfie.R;
 import za.co.maiatoday.autoselfie.preferences.Prefs;
 import za.co.maiatoday.autoselfie.util.TwitterHelper;
@@ -60,18 +56,6 @@ public class OAuthFragment extends DialogFragment {
         String paths[] = url.split(TwitterHelper.URL_TWITTER_OAUTH_VERIFIER + "=");
         if (paths.length > 1) {
             new GetAccessTokenTask().execute(paths[1]);
-//            ApplicationData.getInstance().setAccessToken(paths[1]);
-//            final SharedPreferences sharedPreferences = getActivity()
-//                    .getSharedPreferences(Consts.SHARED_PREFS_NAME, 0);
-//            final Editor edit = sharedPreferences.edit();
-//            edit.putString(Consts.KEY_ACCESS_TOKEN, paths[1]);
-//            edit.putBoolean(Consts.KEY_IS_LOGGED_OUT, false);
-//            edit.commit();
-
-//            Intent intent2 = new Intent(getActivity(), WallScreenActivity.class);
-//            intent2.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//            startActivity(intent2);
-            return;
         }
     }
 
@@ -148,22 +132,8 @@ public class OAuthFragment extends DialogFragment {
                 } catch (Exception t) {
                 }
 
+                OAuthFragment.this.dismiss();
             }
         }
-    }
-
-    /**
-     * setup the twitter factory with the correct key and secret configuration
-     *
-     * @return Twitter instance
-     */
-    Twitter setupTwitter() {
-        ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.setOAuthConsumerKey(TwitterHelper.TWITTER_CONSUMER_KEY);
-        builder.setOAuthConsumerSecret(TwitterHelper.TWITTER_CONSUMER_SECRET);
-        Configuration configuration = builder.build();
-
-        TwitterFactory factory = new TwitterFactory(configuration);
-        return factory.getInstance();
     }
 }

@@ -338,6 +338,10 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         }
     }
 
+    @Override
+    public void checkTwitterLoginState() {
+        tellFragmentsTwitterStatus(isTwitterLoggedInAlready());
+    }
 
 
     /**
