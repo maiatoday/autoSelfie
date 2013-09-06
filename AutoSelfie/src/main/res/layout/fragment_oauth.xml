@@ -4,11 +4,13 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:minWidth="1000dp"
+              android:minHeight="450dp"
               android:layout_gravity="center">
 
     <WebView
             android:id="@+id/web_oauth"
-            android:layout_height="400dp"
-            android:layout_width="320dp"/>
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"/>
 
 </LinearLayout>
