@@ -294,12 +294,10 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
 
     private void tellFragmentsTwitterStatus(boolean loggedIn) {
         Log.d(TAG, "twitter logged in " + loggedIn);
-        OnTwitterLoginChanged fragment = (OnTwitterLoginChanged) getSupportFragmentManager().findFragmentByTag(MAIN_FRAGMENT);
-        if (fragment == null) {
-            fragment = (OnTwitterLoginChanged) getSupportFragmentManager().findFragmentByTag(INFO_FRAGMENT);
-        }
-        if (fragment != null) {
-            fragment.twitterLoggedIn(loggedIn);
+        if (loggedIn) {
+            switchToMainFragment();
+        } else {
+            switchToInfoFragment();
         }
 
     }

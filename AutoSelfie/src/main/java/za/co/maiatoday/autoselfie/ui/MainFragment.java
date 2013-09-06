@@ -34,7 +34,7 @@ import za.co.maiatoday.autoselfie.util.SelfieStatus;
 /**
  * Created by maia on 2013/09/01.
  */
-public class MainFragment extends Fragment implements OnTwitterLoginChanged {   // Update status button
+public class MainFragment extends Fragment {   // Update status button
     private static final int REQUEST_IMAGE = 2;
     Button btnUpdateStatus;
     // EditText for update
@@ -210,10 +210,4 @@ public class MainFragment extends Fragment implements OnTwitterLoginChanged {   
         }
     }
 
-    @Override
-    public void twitterLoggedIn(boolean loggedIn) {
-
-        txtUpdate.setEnabled(loggedIn);
-
-    }
 }

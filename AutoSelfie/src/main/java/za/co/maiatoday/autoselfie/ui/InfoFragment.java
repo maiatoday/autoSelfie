@@ -15,7 +15,7 @@ import za.co.maiatoday.autoselfie.preferences.Prefs;
 /**
  * Created by maia on 2013/09/01.
  */
-public class InfoFragment extends Fragment implements OnTwitterLoginChanged {
+public class InfoFragment extends Fragment {
     // Login button
     Button btnLoginTwitter;
     // Logout button
@@ -103,10 +103,5 @@ public class InfoFragment extends Fragment implements OnTwitterLoginChanged {
         boolean isLoggedIn = isTwitterLoggedInAlready();
         btnLoginTwitter.setVisibility(isLoggedIn ? View.GONE : View.VISIBLE);
         btnLogoutTwitter.setVisibility(isLoggedIn ? View.VISIBLE : View.GONE);
-    }
-
-    @Override
-    public void twitterLoggedIn(boolean loggedIn) {
-        setButtonsView();
     }
 }
