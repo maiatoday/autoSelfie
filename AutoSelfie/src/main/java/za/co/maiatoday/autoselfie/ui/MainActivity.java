@@ -27,14 +27,13 @@ import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
-import twitter4j.User;
 import twitter4j.auth.AccessToken;
-import twitter4j.auth.RequestToken;
-import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 import za.co.maiatoday.autoselfie.R;
+import za.co.maiatoday.autoselfie.preferences.Prefs;
 import za.co.maiatoday.autoselfie.util.ConnectionDetector;
 import za.co.maiatoday.autoselfie.util.SelfieStatus;
+import za.co.maiatoday.autoselfie.util.TwitterHelper;
 
 
 public class MainActivity extends ActionBarActivity implements OnTwitterRequest {
@@ -51,13 +50,14 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     // Shared Preferences
     private static SharedPreferences mSharedPreferences;
     private boolean disableTweet = false;
+    private TwitterHelper twitHelper;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mSharedPreferences = getSharedPreferences(PREF_NAME, 0);
+        mSharedPreferences = getSharedPreferences(Prefs.PREF_NAME, 0);
         boolean showLogin = getOauthTokenFromIntent();
         // Start the first fragment.
         // However, if we're being restored from a previous state,
@@ -85,9 +85,6 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             }
         }
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);    // Shared Preferences
-
-        TWITTER_CONSUMER_KEY = getString(R.string.consumer_key);
-        TWITTER_CONSUMER_SECRET = getString(R.string.consumer_secret);
         cd = new ConnectionDetector(getApplicationContext());
 
         // Check if Internet present
@@ -98,14 +95,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             // stop executing code by return
             return;
         }
-
-        // Check if twitter keys are set
-        if (TWITTER_CONSUMER_KEY.trim().length() == 0 || TWITTER_CONSUMER_SECRET.trim().length() == 0) {
-            alert.showAlertDialog(MainActivity.this, "Twitter oAuth tokens", "Please set your twitter oauth tokens first!", false);
-            // stop executing code by return
-            return;
-        }
-
+        twitHelper = new TwitterHelper(this);
     }
 
     @Override
@@ -143,12 +133,12 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
      * */
         if (!isTwitterLoggedInAlready()) {
             Uri uri = getIntent().getData();
-            if (uri != null && uri.toString().startsWith(TWITTER_CALLBACK_URL)) {
+            if (uri != null && uri.toString().startsWith(TwitterHelper.TWITTER_CALLBACK_URL)) {
                 // oAuth verifier
-                final String verifier = uri
-                        .getQueryParameter(URL_TWITTER_OAUTH_VERIFIER);
-                Log.d(TAG, "Got oAuth verifier URI");
-                new GetAccessTokenTask().execute(verifier);
+//                final String verifier = uri
+//                        .getQueryParameter(URL_TWITTER_OAUTH_VERIFIER);
+//                Log.d(TAG, "Got oAuth verifier URI");
+//                new GetAccessTokenTask().execute(verifier);
 
             } else {
                 showLoginFragment = true;
@@ -255,25 +245,16 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         t.execute();
     }
 
-    /**
-     *   Register your here app https://dev.twitter.com/apps/new and get your
-     *   consumer key and secret
-     *  
-     */
-    String TWITTER_CONSUMER_KEY = "";
-    String TWITTER_CONSUMER_SECRET = "";
-    // Preference Constants
-//    static String PREFERENCE_NAME = "twitter_oauth";
-    static final String PREF_KEY_OAUTH_TOKEN = "oauth_token";
-    static final String PREF_KEY_OAUTH_SECRET = "oauth_token_secret";
-    static final String PREF_KEY_TWITTER_LOGIN = "isTwitterLoggedIn";
-    static final String PREF_NAME = "autoSelfiePrefs";
-    private AccessToken accessToken;
-    // Twitter
-    private static Twitter twitter;
-    private static RequestToken requestToken;
-    static final String TWITTER_CALLBACK_URL = "oauth://t4jsample";
-    static final String URL_TWITTER_OAUTH_VERIFIER = "oauth_verifier";
+    //Display the oAuth web page in a dialog
+    void showAuthDialog() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.addToBackStack(null);
+
+        // Create and show the dialog.
+        OAuthFragment newFragment = new OAuthFragment();
+        newFragment.setTwitterHelper(this.twitHelper);
+        newFragment.show(ft, "dialog");
+    }
 
 
     /**
@@ -284,16 +265,9 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         protected String doInBackground(String... params) {
             String result = "";
             if (!isTwitterLoggedInAlready()) {
-                twitter = setupTwitter();
 
-                try {
-
-                    requestToken = twitter
-                            .getOAuthRequestToken(TWITTER_CALLBACK_URL);
+                if (twitHelper.setupRequestToken()) {
                     result = "ok";
-
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
 
             }
@@ -315,76 +289,21 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
                         "Problem or already Logged into twitter", Toast.LENGTH_LONG).show();
             } else {
                 Log.d(TAG, "startActivity oauth intent");
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri
-                        .parse(requestToken.getAuthenticationURL()));
-//                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-                MainActivity.this.startActivity(intent);
-                MainActivity.this.finish();
+//                Intent intent = new Intent(Intent.ACTION_VIEW, Uri
+//                        .parse(requestToken.getAuthenticationURL()));
+////                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                intent.addFlags(Intent.FLAG_FROM_BACKGROUND);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+//                MainActivity.this.startActivity(intent);
+//                MainActivity.this.finish();
+                showAuthDialog();
             }
         }
     }
 
-    /**
-     * AsyncTask to to get the access token
-     */
-    class GetAccessTokenTask extends AsyncTask<String, String, String> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            twitter = setupTwitter();
-        }
 
-        @Override
-        protected String doInBackground(String... params) {
-            // Get the access token
-            try {
-                accessToken = twitter.getOAuthAccessToken(
-                        requestToken, params[0]);
-            } catch (Exception e) {
-                accessToken = null;
-            }
-            if (accessToken == null) {
-                return "";
-            }
-            return accessToken.getToken();
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            if (!TextUtils.isEmpty(s)) {
-                // Shared Preferences
-                SharedPreferences.Editor e = getApplicationContext().getSharedPreferences(PREF_NAME, 0).edit();
-
-                // After getting access token, access token secret
-                // store them in application preferences
-                e.putString(PREF_KEY_OAUTH_TOKEN, accessToken.getToken());
-                e.putString(PREF_KEY_OAUTH_SECRET,
-                        accessToken.getTokenSecret());
-                // Store login status - true
-                e.putBoolean(PREF_KEY_TWITTER_LOGIN, true);
-                e.commit(); // save changes
-
-                Log.d("Twitter OAuth Token", "> " + accessToken.getToken());
-
-                MainActivity.this.tellFragmentsTwitterStatus(true);
-                // Getting user details from twitter
-                // For now i am getting his name only
-                long userID = accessToken.getUserId();
-                try {
-                    User user = twitter.showUser(userID);
-                    String username = user.getName();
-
-                } catch (Exception t) {
-                }
-
-            }
-        }
-    }
 
     private void tellFragmentsTwitterStatus(boolean loggedIn) {
         Log.d(TAG, "twitter logged in " + loggedIn);
@@ -405,7 +324,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     @Override
     public boolean isTwitterLoggedInAlready() {
         // return twitter login status from Shared Preferences
-        return mSharedPreferences.getBoolean(PREF_KEY_TWITTER_LOGIN, false);
+        return mSharedPreferences.getBoolean(Prefs.PREF_KEY_TWITTER_LOGIN, false);
     }
 
     SelfieStatus selfie;
@@ -419,20 +338,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         }
     }
 
-    /**
-     * setup the twitter factory with the correct key and secret configuration
-     *
-     * @return Twitter instance
-     */
-    Twitter setupTwitter() {
-        ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.setOAuthConsumerKey(TWITTER_CONSUMER_KEY);
-        builder.setOAuthConsumerSecret(TWITTER_CONSUMER_SECRET);
-        Configuration configuration = builder.build();
 
-        TwitterFactory factory = new TwitterFactory(configuration);
-        return factory.getInstance();
-    }
 
     /**
      * AsyncTask to update status
@@ -471,13 +377,13 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             statusUpdate.setMedia("#autoselfie", bis);
             try {
                 ConfigurationBuilder builder = new ConfigurationBuilder();
-                builder.setOAuthConsumerKey(TWITTER_CONSUMER_KEY);
-                builder.setOAuthConsumerSecret(TWITTER_CONSUMER_SECRET);
+                builder.setOAuthConsumerKey(TwitterHelper.TWITTER_CONSUMER_KEY);
+                builder.setOAuthConsumerSecret(TwitterHelper.TWITTER_CONSUMER_SECRET);
 
                 // Access Token
-                String access_token = mSharedPreferences.getString(PREF_KEY_OAUTH_TOKEN, "");
+                String access_token = mSharedPreferences.getString(Prefs.PREF_KEY_OAUTH_TOKEN, "");
                 // Access Token Secret
-                String access_token_secret = mSharedPreferences.getString(PREF_KEY_OAUTH_SECRET, "");
+                String access_token_secret = mSharedPreferences.getString(Prefs.PREF_KEY_OAUTH_SECRET, "");
 
                 AccessToken accessToken = new AccessToken(access_token, access_token_secret);
                 Twitter twitter = new TwitterFactory(builder.build()).getInstance(accessToken);

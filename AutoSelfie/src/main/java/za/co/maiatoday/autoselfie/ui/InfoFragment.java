@@ -10,11 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import za.co.maiatoday.autoselfie.R;
-
-import static za.co.maiatoday.autoselfie.ui.MainActivity.PREF_KEY_OAUTH_SECRET;
-import static za.co.maiatoday.autoselfie.ui.MainActivity.PREF_KEY_OAUTH_TOKEN;
-import static za.co.maiatoday.autoselfie.ui.MainActivity.PREF_KEY_TWITTER_LOGIN;
-import static za.co.maiatoday.autoselfie.ui.MainActivity.PREF_NAME;
+import za.co.maiatoday.autoselfie.preferences.Prefs;
 
 /**
  * Created by maia on 2013/09/01.
@@ -72,7 +68,7 @@ public class InfoFragment extends Fragment implements OnTwitterLoginChanged {
      */
     private boolean isTwitterLoggedInAlready() {
         // return twitter login status from Shared Preferences
-        return getActivity().getSharedPreferences(PREF_NAME, 0).getBoolean(PREF_KEY_TWITTER_LOGIN, false);
+        return getActivity().getSharedPreferences(Prefs.PREF_NAME, 0).getBoolean(Prefs.PREF_KEY_TWITTER_LOGIN, false);
     }
 
     /**
@@ -93,10 +89,10 @@ public class InfoFragment extends Fragment implements OnTwitterLoginChanged {
      */
     private void logoutFromTwitter() {
         // Clear the shared preferences
-        SharedPreferences.Editor e = getActivity().getSharedPreferences(PREF_NAME, 0).edit();
-        e.remove(PREF_KEY_OAUTH_TOKEN);
-        e.remove(PREF_KEY_OAUTH_SECRET);
-        e.remove(PREF_KEY_TWITTER_LOGIN);
+        SharedPreferences.Editor e = getActivity().getSharedPreferences(Prefs.PREF_NAME, 0).edit();
+        e.remove(Prefs.PREF_KEY_OAUTH_TOKEN);
+        e.remove(Prefs.PREF_KEY_OAUTH_SECRET);
+        e.remove(Prefs.PREF_KEY_TWITTER_LOGIN);
         e.commit();
         setButtonsView();
     }
