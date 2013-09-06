@@ -14,6 +14,8 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -50,6 +52,8 @@ public class MainFragment extends Fragment {   // Update status button
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
         imageView = (ImageView) view.findViewById(R.id.result);
+        setHasOptionsMenu(true);
+
         btnSnap = (Button) view.findViewById(R.id.btnSnap);
         // All UI elements
         btnUpdateStatus = (Button) view.findViewById(R.id.btnUpdateStatus);
@@ -122,6 +126,10 @@ public class MainFragment extends Fragment {   // Update status button
         }
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main, menu);
+    }
 
     private Uri outputFileUri;
 

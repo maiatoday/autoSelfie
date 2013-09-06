@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="twitter4j-core-3.0.3">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/AutoSelfie/libs/twitter4j-core-3.0.3.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/artifacts-24/filestore/org.twitter4j/twitter4j-core/3.0.3/jar/c138cedbafc4c37e16cb6c19b0c8976ea03758ec/twitter4j-core-3.0.3.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

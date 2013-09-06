@@ -13,8 +13,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -39,9 +37,6 @@ import za.co.maiatoday.autoselfie.util.ConnectionDetector;
 import za.co.maiatoday.autoselfie.util.SelfieStatus;
 
 
-//import com.google.analytics.tracking.android.EasyTracker;
-
-
 public class MainActivity extends ActionBarActivity implements OnTwitterRequest {
     final String TAG = "MainActivity";
     // Internet Connection detector
@@ -53,7 +48,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     AlertDialogManager alert = new AlertDialogManager();
     // Shared Preferences
     private static SharedPreferences mSharedPreferences;
-    private boolean disableTweet = true;
+    private boolean disableTweet = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -107,14 +102,6 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu items for use in the action bar
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle presses on the action bar items
         switch (item.getItemId()) {
@@ -162,7 +149,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         InfoFragment newFragment = new InfoFragment();
         Bundle args = new Bundle();
         newFragment.setArguments(args);
-        switchFragment(newFragment);
+        switchFragment(newFragment, true);
     }
 
     private void switchToMainFragment() {
@@ -175,17 +162,19 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             // pass the Intent's extras to the fragment as arguments
             newFragment.setArguments(getIntent().getExtras());
 
-            switchFragment(newFragment);
+            switchFragment(newFragment, false);
         }
 
     }
 
-    private void switchFragment(Fragment newFragment) {
+    private void switchFragment(Fragment newFragment, boolean addToBackStack) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
         // Add the fragment to the 'fragment_container' FrameLayout
         transaction.replace(R.id.fragment_container, newFragment);
-        transaction.addToBackStack(null);
+        if (addToBackStack) {
+            transaction.addToBackStack(null);
+        }
 
 // Commit the transaction
         transaction.commit();
