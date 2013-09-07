@@ -1,6 +1,8 @@
 package za.co.maiatoday.autoselfie.util;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.text.TextUtils;
 
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -10,12 +12,14 @@ import twitter4j.auth.RequestToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 import za.co.maiatoday.autoselfie.R;
+import za.co.maiatoday.autoselfie.preferences.Prefs;
 
 /**
  * Created by maia on 2013/09/06.
  */
 public class TwitterHelper {
 
+    private boolean loggedIn = false;
     private boolean disableTweet = false;
 
 
@@ -29,8 +33,10 @@ public class TwitterHelper {
     private Twitter twitter;
     public static final String TWITTER_CALLBACK_URL = "oauth://t4jsample";
     public static final String URL_TWITTER_OAUTH_VERIFIER = "oauth_verifier";
-    private String accessTokenString;
-    private String accessSecretString;
+
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
 
     public Twitter getTwitter() {
         if (twitter == null) {
@@ -60,10 +66,21 @@ public class TwitterHelper {
         TWITTER_CONSUMER_KEY = context.getString(R.string.consumer_key);
         TWITTER_CONSUMER_SECRET = context.getString(R.string.consumer_secret);
         // Check if twitter keys are set
-        if (TwitterHelper.TWITTER_CONSUMER_KEY.trim().length() == 0 || TwitterHelper.TWITTER_CONSUMER_SECRET.trim().length() == 0) {
+//        if (TwitterHelper.TWITTER_CONSUMER_KEY.trim().length() == 0 || TwitterHelper.TWITTER_CONSUMER_SECRET.trim().length() == 0) {
 //           alert.showAlertDialog(MainActivity.this, "Twitter oAuth tokens", "Please set your twitter oauth tokens first!", false);
             // stop executing code by return
-            return;
+
+        SharedPreferences sp = context.getSharedPreferences(Prefs.PREF_NAME, 0);
+        // Access Token
+        String access_token = sp.getString(Prefs.PREF_KEY_OAUTH_TOKEN, "");
+        // Access Token Secret
+        String access_token_secret = sp.getString(Prefs.PREF_KEY_OAUTH_SECRET, "");
+        if (!TextUtils.isEmpty(access_token) && !TextUtils.isEmpty(access_token_secret)) {
+            setupTwitter(access_token, access_token_secret);
+            loggedIn = true;
+        } else {
+            setupTwitter();
+            loggedIn = false;
         }
 
     }
@@ -122,8 +139,7 @@ public class TwitterHelper {
             accessToken = null;
         } else {
             try {
-                accessToken = twitter.getOAuthAccessToken(
-                        requestToken, params[0]);
+                accessToken = twitter.getOAuthAccessToken(requestToken, params[0]);
             } catch (TwitterException e) {
                 accessToken = null;
 

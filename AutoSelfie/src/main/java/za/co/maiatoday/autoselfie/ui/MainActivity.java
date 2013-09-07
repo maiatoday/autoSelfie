@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -24,7 +23,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import twitter4j.StatusUpdate;
-import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import za.co.maiatoday.autoselfie.R;
 import za.co.maiatoday.autoselfie.preferences.Prefs;
@@ -55,7 +53,6 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mSharedPreferences = getSharedPreferences(Prefs.PREF_NAME, 0);
-        boolean showLogin = getOauthTokenFromIntent();
         // Start the first fragment.
         // However, if we're being restored from a previous state,
         // then we don't need to do anything and should return or else
@@ -64,13 +61,8 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             if (findViewById(R.id.fragment_container) != null) {
                 Fragment firstFragment;
                 String tag;
-                if (showLogin) {
-                    firstFragment = new InfoFragment();
-                    tag = INFO_FRAGMENT;
-                } else {
-                    firstFragment = new MainFragment();
-                    tag = MAIN_FRAGMENT;
-                }
+                firstFragment = new MainFragment();
+                tag = MAIN_FRAGMENT;
 
                 // In case this activity was started with special instructions from an Intent,
                 // pass the Intent's extras to the fragment as arguments
@@ -92,7 +84,9 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             // stop executing code by return
             return;
         }
-        twitHelper = new TwitterHelper(this);
+        if (!isTwitterLoggedInAlready()) {
+            logInTwitter();
+        }
     }
 
     @Override
@@ -120,28 +114,6 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         Log.d(TAG, "onNewIntent");
         super.onNewIntent(intent);
 
-    }
-
-    private boolean getOauthTokenFromIntent() {
-        boolean showLoginFragment = false;
-    /* This if conditions is tested once is
-     * redirected from twitter page. Parse the uri to get oAuth
-     * Verifier
-     * */
-        if (!isTwitterLoggedInAlready()) {
-            Uri uri = getIntent().getData();
-            if (uri != null && uri.toString().startsWith(TwitterHelper.TWITTER_CALLBACK_URL)) {
-                // oAuth verifier
-//                final String verifier = uri
-//                        .getQueryParameter(URL_TWITTER_OAUTH_VERIFIER);
-//                Log.d(TAG, "Got oAuth verifier URI");
-//                new GetAccessTokenTask().execute(verifier);
-
-            } else {
-                showLoginFragment = true;
-            }
-        }
-        return showLoginFragment;
     }
 
     @Override
@@ -261,8 +233,8 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         @Override
         protected String doInBackground(String... params) {
             String result = "";
-            if (!isTwitterLoggedInAlready()) {
-
+            twitHelper = new TwitterHelper(MainActivity.this);
+            if (!twitHelper.isLoggedIn()) {
                 if (twitHelper.setupRequestToken()) {
                     result = "ok";
                 }
@@ -363,14 +335,10 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             ByteArrayInputStream bis = new ByteArrayInputStream(myTwitterUploadBytes);
             statusUpdate.setMedia("#autoselfie", bis);
             try {
-                // Access Token
-                String access_token = mSharedPreferences.getString(Prefs.PREF_KEY_OAUTH_TOKEN, "");
-                // Access Token Secret
-                String access_token_secret = mSharedPreferences.getString(Prefs.PREF_KEY_OAUTH_SECRET, "");
-                Twitter twitter = twitHelper.setupTwitter(access_token, access_token_secret);
+                twitHelper = new TwitterHelper(MainActivity.this);
 
                 // Update status
-                twitter4j.Status response = twitter.updateStatus(statusUpdate);
+                twitter4j.Status response = twitHelper.getTwitter().updateStatus(statusUpdate);
 
                 Log.d("Status", "> " + response.getText());
             } catch (TwitterException e) {
