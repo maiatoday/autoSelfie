@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
@@ -70,7 +71,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
 
                 // Add the fragment to the 'fragment_container' FrameLayout
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.fragment_container, firstFragment, tag).commit();
+                    .add(R.id.fragment_container, firstFragment, tag).commit();
             }
         }
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);    // Shared Preferences
@@ -80,7 +81,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         if (!cd.isConnectingToInternet()) {
             // Internet Connection is not present
             alert.showAlertDialog(MainActivity.this, "Internet Connection Error",
-                    "Please connect to working Internet connection", false);
+                "Please connect to working Internet connection", false);
             // stop executing code by return
             return;
         }
@@ -93,11 +94,11 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle presses on the action bar items
         switch (item.getItemId()) {
-            case R.id.action_info:
-                switchToInfoFragment();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        case R.id.action_info:
+            switchToInfoFragment();
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
         }
     }
 
@@ -155,7 +156,14 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
         InfoFragment newFragment = new InfoFragment();
         Bundle args = new Bundle();
         newFragment.setArguments(args);
-        switchFragment(newFragment, true, INFO_FRAGMENT);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+        // Add the fragment to the 'fragment_container' FrameLayout
+        transaction.replace(R.id.fragment_container, newFragment, INFO_FRAGMENT);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
     }
 
     private void switchToMainFragment() {
@@ -167,40 +175,32 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             // In case this activity was started with special instructions from an Intent,
             // pass the Intent's extras to the fragment as arguments
             newFragment.setArguments(getIntent().getExtras());
+            FragmentManager manager = getSupportFragmentManager();
+            manager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            FragmentTransaction transaction = manager.beginTransaction();
 
-            switchFragment(newFragment, false, MAIN_FRAGMENT);
+            // Add the fragment to the 'fragment_container' FrameLayout
+            transaction.replace(R.id.fragment_container, newFragment, MAIN_FRAGMENT);
+            // Commit the transaction
+            transaction.commit();
         }
 
     }
-
-    private void switchFragment(Fragment newFragment, boolean addToBackStack, String tag) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-
-        // Add the fragment to the 'fragment_container' FrameLayout
-        transaction.replace(R.id.fragment_container, newFragment, tag);
-        if (addToBackStack) {
-            transaction.addToBackStack(null);
-        }
-
-// Commit the transaction
-        transaction.commit();
-    }
-
 
     //-------------- opencv test for manager code ----------------
     final private LoaderCallbackInterface mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
-                case LoaderCallbackInterface.SUCCESS: {
-                    Log.i(TAG, "OpenCV loaded successfully");
+            case LoaderCallbackInterface.SUCCESS: {
+                Log.i(TAG, "OpenCV loaded successfully");
 //                    mOpenCvCameraView.enableView();
-                }
-                break;
-                default: {
-                    super.onManagerConnected(status);
-                }
-                break;
+            }
+            break;
+            default: {
+                super.onManagerConnected(status);
+            }
+            break;
             }
         }
     };
@@ -255,7 +255,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             if (TextUtils.isEmpty(s)) {
                 // user already logged into twitter or error
                 Toast.makeText(getApplicationContext(),
-                        "Problem or already Logged into twitter", Toast.LENGTH_LONG).show();
+                    "Problem or already Logged into twitter", Toast.LENGTH_LONG).show();
             } else {
                 Log.d(TAG, "startActivity oauth intent");
                 showAuthDialog();
@@ -360,8 +360,8 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             pDialog.dismiss();
             // updating UI from Background Thread
             Toast.makeText(getApplicationContext(),
-                    "Status tweeted successfully", Toast.LENGTH_SHORT)
-                    .show();
+                "Status tweeted successfully", Toast.LENGTH_SHORT)
+                .show();
         }
 
     }

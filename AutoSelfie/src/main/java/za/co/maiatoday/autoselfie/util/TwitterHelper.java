@@ -68,7 +68,7 @@ public class TwitterHelper {
         // Check if twitter keys are set
 //        if (TwitterHelper.TWITTER_CONSUMER_KEY.trim().length() == 0 || TwitterHelper.TWITTER_CONSUMER_SECRET.trim().length() == 0) {
 //           alert.showAlertDialog(MainActivity.this, "Twitter oAuth tokens", "Please set your twitter oauth tokens first!", false);
-            // stop executing code by return
+        // stop executing code by return
 
         SharedPreferences sp = context.getSharedPreferences(Prefs.PREF_NAME, 0);
         // Access Token
@@ -125,7 +125,7 @@ public class TwitterHelper {
         try {
             ok = true;
             requestToken = twitter
-                    .getOAuthRequestToken(TwitterHelper.TWITTER_CALLBACK_URL);
+                .getOAuthRequestToken(TwitterHelper.TWITTER_CALLBACK_URL);
         } catch (TwitterException e) {
             e.printStackTrace();
         }
