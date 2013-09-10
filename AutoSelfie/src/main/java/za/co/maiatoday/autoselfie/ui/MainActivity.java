@@ -85,9 +85,6 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
             // stop executing code by return
             return;
         }
-        if (!isTwitterLoggedInAlready()) {
-            logInTwitter();
-        }
     }
 
     @Override
@@ -169,20 +166,25 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     private void switchToMainFragment() {
         if (findViewById(R.id.fragment_container) != null) {
 
-            // Create an instance of ExampleFragment
-            MainFragment newFragment = new MainFragment();
-
-            // In case this activity was started with special instructions from an Intent,
-            // pass the Intent's extras to the fragment as arguments
-            newFragment.setArguments(getIntent().getExtras());
             FragmentManager manager = getSupportFragmentManager();
-            manager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-            FragmentTransaction transaction = manager.beginTransaction();
+            Fragment f = manager.findFragmentByTag(MAIN_FRAGMENT);
+            //only replace the fragment with main if it isn't the main fragment already
+            if (f == null) {
 
-            // Add the fragment to the 'fragment_container' FrameLayout
-            transaction.replace(R.id.fragment_container, newFragment, MAIN_FRAGMENT);
-            // Commit the transaction
-            transaction.commit();
+                // Create an instance of ExampleFragment
+                MainFragment newFragment = new MainFragment();
+
+                // In case this activity was started with special instructions from an Intent,
+                // pass the Intent's extras to the fragment as arguments
+                newFragment.setArguments(getIntent().getExtras());
+                manager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                FragmentTransaction transaction = manager.beginTransaction();
+
+                // Add the fragment to the 'fragment_container' FrameLayout
+                transaction.replace(R.id.fragment_container, newFragment, MAIN_FRAGMENT);
+                // Commit the transaction
+                transaction.commit();
+            }
         }
 
     }

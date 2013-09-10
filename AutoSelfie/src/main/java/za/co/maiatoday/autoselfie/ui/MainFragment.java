@@ -70,22 +70,27 @@ public class MainFragment extends Fragment {   // Update status button
 
             @Override
             public void onClick(View v) {
-                // Call update status function
-                // Get the status from EditText
+
+                OnTwitterRequest activity = (OnTwitterRequest) getActivity();
+                if (!activity.isTwitterLoggedInAlready()) {
+                    activity.logInTwitter();
+                } else {
+                    // Call update status function
+                    // Get the status from EditText
 //                String status = txtUpdate.getText().toString();
 
-                // Check for blank text
+                    // Check for blank text
 //                if (status.trim().length() > 0) {
-                selfie.processSelfie();
-                imageView.setImageBitmap(selfie.getBmpToPost()); //TODO only for debug to see result here
-                OnTwitterRequest activity = (OnTwitterRequest) getActivity();
-                activity.updateStatus(selfie);
+                    selfie.processSelfie();
+                    imageView.setImageBitmap(selfie.getBmpToPost()); //TODO only for debug to see result here
+                    activity.updateStatus(selfie);
 //                } else {
 //                    // EditText is empty
 //                    Toast.makeText(getActivity(),
 //                            "Please enter status message", Toast.LENGTH_SHORT)
 //                            .show();
 //                }
+                }
             }
         });
 
@@ -109,7 +114,6 @@ public class MainFragment extends Fragment {   // Update status button
     public void onResume() {
         super.onResume();
         OnTwitterRequest activity = (OnTwitterRequest) getActivity();
-        btnUpdateStatus.setEnabled(activity.isTwitterLoggedInAlready());
     }
 
     @Override
