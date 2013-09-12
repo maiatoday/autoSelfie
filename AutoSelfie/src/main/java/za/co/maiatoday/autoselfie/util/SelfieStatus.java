@@ -94,37 +94,20 @@ public class SelfieStatus {
                     confidence = faces[index].confidence();
 
                     Log.i("FaceDetector",
-                            "Confidence: " + confidence +
-                                    ", Eye distance: " + eyeDistance +
-                                    ", Mid Point: (" + midPoint.x + ", " + midPoint.y + ")");
+                        "Confidence: " + confidence +
+                            ", Eye distance: " + eyeDistance +
+                            ", Mid Point: (" + midPoint.x + ", " + midPoint.y + ")");
 
 //                    canvas.drawRect((int)midPoint.x - eyeDistance ,
 //                            (int)midPoint.y - eyeDistance ,
 //                            (int)midPoint.x + eyeDistance,
 //                            (int)midPoint.y + eyeDistance, drawPaint);
                     canvas.drawLine((int) midPoint.x - eyeDistance,
-                            (int) midPoint.y,
-                            (int) midPoint.x + eyeDistance,
-                            (int) midPoint.y, drawPaint);
+                        (int) midPoint.y,
+                        (int) midPoint.x + eyeDistance,
+                        (int) midPoint.y, drawPaint);
                 }
             }
-
-//            String filepath = Environment.getExternalStorageDirectory() + "/facedetect" + System.currentTimeMillis() + ".jpg";
-//
-//            try {
-//                FileOutputStream fos = new FileOutputStream(filepath);
-//
-//                bmpToPost.compress(Bitmap.CompressFormat.JPEG, 90, fos);
-//
-//                fos.flush();
-//                fos.close();
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-
-
         }
     }
 
