@@ -22,6 +22,8 @@ public class SelfieStatus {
     Bitmap orig;
 
     private static final int MAX_FACES = 5;
+    private FaceDetector detector;
+    private FaceDetector.Face[] faces;
 
     void SelfieStatus() {
 
@@ -64,8 +66,8 @@ public class SelfieStatus {
             int width = orig.getWidth();
             int height = orig.getHeight();
 
-            FaceDetector detector = new FaceDetector(width, height, MAX_FACES);
-            FaceDetector.Face[] faces = new FaceDetector.Face[MAX_FACES];
+            detector = new FaceDetector(width, height, MAX_FACES);
+            faces = new FaceDetector.Face[MAX_FACES];
 
             bmpToPost = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
             Paint ditherPaint = new Paint();
@@ -80,7 +82,7 @@ public class SelfieStatus {
             canvas.setBitmap(bmpToPost);
             canvas.drawBitmap(orig, 0, 0, ditherPaint);
 
-            int facesFound = detector.findFaces(bmpToPost, faces);
+            int facesFound = detector.findFaces(orig, faces);
             PointF midPoint = new PointF();
             float eyeDistance = 0.0f;
             float confidence = 0.0f;
@@ -115,7 +117,7 @@ public class SelfieStatus {
         mRgba = new Mat();
         mRgbaInnerWindow = null;
         mIntermediateMat = new Mat();
-        Utils.bitmapToMat(orig, mRgba);
+        Utils.bitmapToMat(bmpToPost, mRgba);
 
 //        if ((mRgbaInnerWindow == null) || (mGrayInnerWindow == null) || (mRgba.cols() != mSizeRgba.width) || (mRgba.height() != mSizeRgba.height))
         createAuxiliaryMats();
