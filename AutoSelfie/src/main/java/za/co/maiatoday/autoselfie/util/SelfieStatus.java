@@ -13,6 +13,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.util.Random;
+
 /**
  * Created by maia on 2013/08/22.
  */
@@ -48,14 +50,25 @@ public class SelfieStatus {
     public boolean processSelfie() {
         status = "#autoselfie";
         detectFaces();
-//        //choose another algorithm
-//        Random r = new Random();
-//        int i1=r.nextInt(5);
-//        switch (i1) {
-//            case 0:
-//                break;
-//        }
-        firstTryOpenCV();
+        //choose another algorithm
+        Random r = new Random();
+        int i1 = r.nextInt(5);
+        switch (i1) {
+        case 0:
+            cannyKonny();
+            break;
+        case 1:
+            primaryRoy();
+            break;
+        case 2:
+            blobbyContours();
+            break;
+        default:
+        case 3:
+            andAnotherOneForLuck();
+            break;
+        }
+
 
         return true;
     }
@@ -82,7 +95,7 @@ public class SelfieStatus {
             canvas.setBitmap(bmpToPost);
             canvas.drawBitmap(orig, 0, 0, ditherPaint);
 
-            int facesFound = detector.findFaces(orig, faces);
+            int facesFound = detector.findFaces(bmpToPost, faces);
             PointF midPoint = new PointF();
             float eyeDistance = 0.0f;
             float confidence = 0.0f;
@@ -113,7 +126,8 @@ public class SelfieStatus {
         }
     }
 
-    private void firstTryOpenCV() {
+    private void cannyKonny() {
+        // find the eyes and make red lines
         mRgba = new Mat();
         mRgbaInnerWindow = null;
         mIntermediateMat = new Mat();
@@ -128,6 +142,33 @@ public class SelfieStatus {
 
         status = "#autoselfie first openCV canny filter";
 
+    }
+
+    private void primaryRoy() {
+        // black white  red yellow blue  and dots
+        status = "#autoselfie 8bit Roy";
+        cannyKonny();
+    }
+
+    private void blobbyContours() {
+        //down to 2bit colour, find blobs then perimeters of blobs
+        // contours overlap to make a grid
+
+        status = "#autoselfie blobbly Contours";
+        cannyKonny();
+
+    }
+
+    private void andAnotherOneForLuck() {
+// the lucky one, orange, pink, red an yellow are lucky colours
+        // eyes all catlike and spinning wheels
+        status = "#autoselfie and another one for luck";
+        cannyKonny();
+    }
+
+    private void noPointInHoldingOn() {
+        status = "#autoselfie no point in holding on";
+        cannyKonny();
     }
 
     private Size mSize0;
