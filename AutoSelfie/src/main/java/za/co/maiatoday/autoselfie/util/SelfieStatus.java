@@ -50,6 +50,15 @@ public class SelfieStatus {
     public boolean processSelfie() {
         status = "#autoselfie";
         detectFaces();
+
+        mRgba = new Mat();
+        mGray = new Mat();
+        mRgbaInnerWindow = null;
+        mGrayInnerWindow = null;
+        mIntermediateMat = new Mat();
+        Utils.bitmapToMat(bmpToPost, mRgba);
+        Utils.bitmapToMat(bmpToPost, mGray);
+        createAuxiliaryMats();
         //choose another algorithm
         Random r = new Random();
         int i1 = r.nextInt(5);
@@ -68,8 +77,8 @@ public class SelfieStatus {
             andAnotherOneForLuck();
             break;
         }
-
-
+        Utils.matToBitmap(mRgba, bmpToPost);
+        Log.i("SelfieStatus", status);
         return true;
     }
 
@@ -127,48 +136,51 @@ public class SelfieStatus {
     }
 
     private void cannyKonny() {
+
+        status = "#autoselfie first openCV canny filter";
         // find the eyes and make red lines
-        mRgba = new Mat();
-        mRgbaInnerWindow = null;
-        mIntermediateMat = new Mat();
-        Utils.bitmapToMat(bmpToPost, mRgba);
 
 //        if ((mRgbaInnerWindow == null) || (mGrayInnerWindow == null) || (mRgba.cols() != mSizeRgba.width) || (mRgba.height() != mSizeRgba.height))
-        createAuxiliaryMats();
         Imgproc.Canny(mRgbaInnerWindow, mIntermediateMat, 80, 90);
         Imgproc.cvtColor(mIntermediateMat, mRgbaInnerWindow, Imgproc.COLOR_GRAY2BGRA, 4);
 
         Utils.matToBitmap(mRgba, bmpToPost);
-
-        status = "#autoselfie first openCV canny filter";
-
     }
 
     private void primaryRoy() {
-        // black white  red yellow blue  and dots
+        // black white  red yellow blue  and dots   status = "#autoselfie blobbly Contours";
         status = "#autoselfie 8bit Roy";
-        cannyKonny();
     }
 
     private void blobbyContours() {
         //down to 2bit colour, find blobs then perimeters of blobs
         // contours overlap to make a grid
-
         status = "#autoselfie blobbly Contours";
-        cannyKonny();
-
+        Imgproc.cvtColor(mRgba, mIntermediateMat, Imgproc.COLOR_RGB2GRAY, 4);
+        Random r = new Random();
+        int i1 = r.nextInt(20) + 128;
+        Imgproc.threshold(mIntermediateMat, mRgba, i1, 255, 0);
+        bmpToPost = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(mRgba, bmpToPost);
     }
 
     private void andAnotherOneForLuck() {
 // the lucky one, orange, pink, red an yellow are lucky colours
         // eyes all catlike and spinning wheels
+
+        status = "#autoselfie blobbly Contours";
+        Imgproc.cvtColor(mRgba, mGray, Imgproc.COLOR_RGB2GRAY, 4);
+        Random r = new Random();
+        int i1 = r.nextInt(20) + 128;
+        Imgproc.threshold(mGrayInnerWindow, mRgba, i1, 255, 0);
+        bmpToPost = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(mRgba, bmpToPost);
         status = "#autoselfie and another one for luck";
-        cannyKonny();
     }
 
     private void noPointInHoldingOn() {
+        blobbyContours();
         status = "#autoselfie no point in holding on";
-        cannyKonny();
     }
 
     private Size mSize0;
@@ -202,8 +214,8 @@ public class SelfieStatus {
             mRgbaInnerWindow = mRgba.submat(top, top + height, left, left + width);
         mSizeRgbaInner = mRgbaInnerWindow.size();
 
-//        if (mGrayInnerWindow == null && !mGray.empty())
-//            mGrayInnerWindow = mGray.submat(top, top + height, left, left + width);
+        if (mGrayInnerWindow == null && !mGray.empty())
+            mGrayInnerWindow = mGray.submat(top, top + height, left, left + width);
 //
 //        if (mZoomCorner == null)
 //            mZoomCorner = mRgba.submat(0, rows / 2 - rows / 10, 0, cols / 2 - cols / 10);
