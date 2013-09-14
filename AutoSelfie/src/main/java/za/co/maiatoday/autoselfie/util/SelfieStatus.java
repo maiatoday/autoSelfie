@@ -9,7 +9,6 @@ import android.media.FaceDetector;
 import android.util.Log;
 
 import org.opencv.android.Utils;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -20,6 +19,7 @@ import java.util.Random;
  * Created by maia on 2013/08/22.
  */
 public class SelfieStatus {
+    private static final int DRIP_COUNT = 20;
     Bitmap bmpToPost;
     String status;
     Bitmap orig;
@@ -53,26 +53,27 @@ public class SelfieStatus {
         detectFaces();
         setupMats(orig);
         //Roll the dice to see which technique to use
-        Random r = new Random();
-        int i1 = r.nextInt(5);
-        switch (i1) {
-        case 0:
-            cannyKonny();
-            break;
-        case 1:
-            primaryRoy();
-            break;
-        case 2:
-            blobbyContours();
-            break;
-        case 3:
-            andAnotherOneForLuck();
-            break;
-        default:
-        case 4:
-            noPointInHoldingOn();
-            break;
-        }
+//        Random r = new Random();
+//        int i1 = r.nextInt(5);
+//        switch (i1) {
+//        case 0:
+//            cannyKonny();
+//            break;
+//        case 1:
+//            primaryRoy();
+//            break;
+//        case 2:
+//            blobbyContours();
+//            break;
+//        case 3:
+//            andAnotherOneForLuck();
+//            break;
+//        default:
+//        case 4:
+//            noPointInHoldingOn();
+//            break;
+//        }
+        cannyKonny();
         Log.i("SelfieStatus", status);
         return true;
     }
@@ -102,13 +103,30 @@ public class SelfieStatus {
 
     private void cannyKonny() {
 //        if ((mRgbaInnerWindow == null) || (mGrayInnerWindow == null) || (mRgba.cols() != mSizeRgba.width) || (mRgba.height() != mSizeRgba.height))
-        Imgproc.Canny(mRgbaInnerWindow, mIntermediateMat, 80, 90);
-        Imgproc.cvtColor(mIntermediateMat, mRgbaInnerWindow, Imgproc.COLOR_GRAY2BGRA, 4);
-        Core.bitwise_not(mRgbaInnerWindow, mIntermediateMat);
+//        Imgproc.Canny(mRgbaInnerWindow, mIntermediateMat, 80, 90);
+//        Imgproc.Canny(mRgba, mIntermediateMat, 80, 90);
+//        Imgproc.cvtColor(mIntermediateMat, mRgba, Imgproc.COLOR_GRAY2BGRA, 4);
+//        Core.bitwise_not(mRgbaInnerWindow, mIntermediateMat);
+
+        // 1) Apply gaussian blur to remove noise
+//        Imgproc.GaussianBlur(mRgba, mIntermediateMat, new Size(11,11), 0);
+        Imgproc.Canny(mRgba, mIntermediateMat, 80, 90);
+//// 2) AdaptiveThreshold -> classify as either black or white
+//        Imgproc.adaptiveThreshold(mIntermediateMat, mIntermediateMat, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 5, 2);
+//        Imgproc.cvtColor(mIntermediateMat, mIntermediateMat, Imgproc.COLOR_GRAY2BGRA, 4);
+// 3) Invert the image
+//        Core.bitwise_not(mIntermediateMat, mIntermediateMat);
+
+//        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ERODE, new Size(3,3), new Point(1,1));
+//        Imgproc.erode(mIntermediateMat, mIntermediateMat, kernel);
+
         bmpToPost = getImagefromMat(mIntermediateMat);
-        status = "#autoselfie first openCV canny filter";
         // find the eyes and make red lines
+        bmpToPost = eyeRedDrips(bmpToPost);
+
+        status = "#autoselfie canny and Konny";
     }
+
 
     private void primaryRoy() {
         // black white  red yellow blue  and dots
@@ -135,12 +153,12 @@ public class SelfieStatus {
 // the lucky one, orange, pink, red an yellow are lucky colours
         // eyes all catlike and spinning wheels
 
-        bmpToPost = blockFace(orig);
+        bmpToPost = eyeLargeBlocks(orig);
         status = "#autoselfie and another one for luck";
     }
 
     private void noPointInHoldingOn() {
-        bmpToPost = deleteEyes(orig);
+        bmpToPost = eyeDelete(orig);
         status = "#autoselfie no point in holding on";
     }
 
@@ -189,7 +207,80 @@ public class SelfieStatus {
         return outBmp;
     }
 
-    private Bitmap deleteEyes(Bitmap in) {
+    //All the eye drawing methods
+
+    private Bitmap eyeRedDrips(Bitmap in) {
+
+        Bitmap out = in.copy(in.getConfig(), true);
+        Paint drawPaint = new Paint();
+
+        drawPaint.setColor(Color.RED);
+        drawPaint.setStyle(Paint.Style.STROKE);
+        drawPaint.setStrokeWidth(5);
+
+        Canvas canvas = new Canvas();
+        canvas.setBitmap(out);
+
+        PointF midPoint = new PointF();
+        float eyeDistance = 0.0f;
+        float confidence = 0.0f;
+
+        if (facesFound > 0) {
+            for (int index = 0; index < facesFound; ++index) {
+                faces[index].getMidPoint(midPoint);
+                eyeDistance = faces[index].eyesDistance();
+                confidence = faces[index].confidence();
+
+                Log.i("FaceDetector",
+                    "Confidence: " + confidence +
+                        ", Eye distance: " + eyeDistance +
+                        ", Mid Point: (" + midPoint.x + ", " + midPoint.y + ")");
+                Random r = new Random();
+                int flip = r.nextInt(2);
+                int maxDripLength = in.getHeight() / 8;
+
+                float halfEyeWidth = eyeDistance / 4;
+                float eyeLeftCentreX = (int) midPoint.x - eyeDistance / 2;
+                float belowEyesY = (int) midPoint.y + halfEyeWidth / 2;
+
+                canvas.drawLine(eyeLeftCentreX - halfEyeWidth,
+                    belowEyesY,
+                    eyeLeftCentreX + halfEyeWidth,
+                    belowEyesY, drawPaint);
+
+                float eyeRightCentreX = (int) midPoint.x + eyeDistance / 2;
+                canvas.drawLine((int) eyeRightCentreX - halfEyeWidth,
+                    belowEyesY,
+                    eyeRightCentreX + halfEyeWidth,
+                    belowEyesY, drawPaint);
+
+                float dx = eyeDistance / 2 / DRIP_COUNT;
+                float startx = eyeLeftCentreX - halfEyeWidth;
+                if (flip == 0) {
+                    eyeDrips(drawPaint, canvas, maxDripLength, belowEyesY, dx, startx);
+                } else {
+                    startx = eyeRightCentreX - halfEyeWidth;
+                    eyeDrips(drawPaint, canvas, maxDripLength, belowEyesY, dx, startx);
+                }
+            }
+        }
+        return out;
+    }
+
+    private void eyeDrips(Paint drawPaint, Canvas canvas, int maxDripLength, float belowEyesY, float dx, float startx) {
+
+        for (int li = 0; li < DRIP_COUNT; li++) {
+            Random r = new Random();
+            int ll = r.nextInt(maxDripLength);
+            canvas.drawLine(startx,
+                belowEyesY,
+                startx,
+                belowEyesY + ll, drawPaint);
+            startx += dx;
+        }
+    }
+
+    private Bitmap eyeDelete(Bitmap in) {
         Bitmap out = in.copy(in.getConfig(), true);
         Paint drawPaint = new Paint();
 
@@ -228,7 +319,7 @@ public class SelfieStatus {
         return out;
     }
 
-    private Bitmap blockFace(Bitmap in) {
+    private Bitmap eyeLargeBlocks(Bitmap in) {
         Bitmap out = in.copy(in.getConfig(), true);
         Paint drawPaint = new Paint();
 
