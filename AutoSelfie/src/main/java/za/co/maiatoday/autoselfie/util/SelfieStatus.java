@@ -9,6 +9,7 @@ import android.media.FaceDetector;
 import android.util.Log;
 
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -49,19 +50,23 @@ public class SelfieStatus {
     }
 
     public boolean processSelfie() {
+        if (orig == null) {
+            return false;
+        }
         status = "#autoselfie";
         detectFaces();
         setupMats(orig);
         //Roll the dice to see which technique to use
-//        Random r = new Random();
-//        int i1 = r.nextInt(5);
-//        switch (i1) {
-//        case 0:
-//            cannyKonny();
-//            break;
-//        case 1:
-//            primaryRoy();
-//            break;
+        Random r = new Random();
+        int i1 = r.nextInt(5);
+        switch (i1) {
+        case 0:
+            cannyKonny();
+            break;
+        default:
+        case 1:
+            primaryRoy();
+            break;
 //        case 2:
 //            blobbyContours();
 //            break;
@@ -72,8 +77,7 @@ public class SelfieStatus {
 //        case 4:
 //            noPointInHoldingOn();
 //            break;
-//        }
-        cannyKonny();
+        }
         Log.i("SelfieStatus", status);
         return true;
     }
@@ -102,23 +106,8 @@ public class SelfieStatus {
     }
 
     private void cannyKonny() {
-//        if ((mRgbaInnerWindow == null) || (mGrayInnerWindow == null) || (mRgba.cols() != mSizeRgba.width) || (mRgba.height() != mSizeRgba.height))
-//        Imgproc.Canny(mRgbaInnerWindow, mIntermediateMat, 80, 90);
-//        Imgproc.Canny(mRgba, mIntermediateMat, 80, 90);
-//        Imgproc.cvtColor(mIntermediateMat, mRgba, Imgproc.COLOR_GRAY2BGRA, 4);
-//        Core.bitwise_not(mRgbaInnerWindow, mIntermediateMat);
-
-        // 1) Apply gaussian blur to remove noise
-//        Imgproc.GaussianBlur(mRgba, mIntermediateMat, new Size(11,11), 0);
         Imgproc.Canny(mRgba, mIntermediateMat, 80, 90);
-//// 2) AdaptiveThreshold -> classify as either black or white
-//        Imgproc.adaptiveThreshold(mIntermediateMat, mIntermediateMat, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 5, 2);
-//        Imgproc.cvtColor(mIntermediateMat, mIntermediateMat, Imgproc.COLOR_GRAY2BGRA, 4);
-// 3) Invert the image
-//        Core.bitwise_not(mIntermediateMat, mIntermediateMat);
-
-//        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ERODE, new Size(3,3), new Point(1,1));
-//        Imgproc.erode(mIntermediateMat, mIntermediateMat, kernel);
+        Core.bitwise_not(mIntermediateMat, mIntermediateMat);
 
         bmpToPost = getImagefromMat(mIntermediateMat);
         // find the eyes and make red lines
@@ -135,6 +124,8 @@ public class SelfieStatus {
         int i1 = r.nextInt(20) + 128;
         Imgproc.threshold(mRgba, mRgba, i1, 255, 0);
         bmpToPost = getImagefromMat(mRgba);
+        bmpToPost = drawDots(bmpToPost);
+        bmpToPost = eyeLargeBlocks(bmpToPost, 1);
         status = "#autoselfie 8bit Roy";
     }
 
@@ -153,7 +144,7 @@ public class SelfieStatus {
 // the lucky one, orange, pink, red an yellow are lucky colours
         // eyes all catlike and spinning wheels
 
-        bmpToPost = eyeLargeBlocks(orig);
+        bmpToPost = eyeLargeBlocks(orig, 5);
         status = "#autoselfie and another one for luck";
     }
 
@@ -319,7 +310,7 @@ public class SelfieStatus {
         return out;
     }
 
-    private Bitmap eyeLargeBlocks(Bitmap in) {
+    private Bitmap eyeLargeBlocks(Bitmap in, int count) {
         Bitmap out = in.copy(in.getConfig(), true);
         Paint drawPaint = new Paint();
 
@@ -333,6 +324,7 @@ public class SelfieStatus {
         PointF midPoint = new PointF();
         float eyeDistance = 0.0f;
         float confidence = 0.0f;
+        int jump = in.getWidth() / 16;
 
         if (facesFound > 0) {
             for (int index = 0; index < facesFound; ++index) {
@@ -344,14 +336,46 @@ public class SelfieStatus {
                     "Confidence: " + confidence +
                         ", Eye distance: " + eyeDistance +
                         ", Mid Point: (" + midPoint.x + ", " + midPoint.y + ")");
-                for (int of = 0; of < 20; of += 4) {
+                for (int of = 0; of < count; of += 1) {
                     canvas.drawRect((int) midPoint.x - eyeDistance + of,
-                        (int) midPoint.y - eyeDistance + of,
-                        (int) midPoint.x + eyeDistance + of,
-                        (int) midPoint.y + eyeDistance + of, drawPaint);
+                        (int) midPoint.y - eyeDistance + of * jump,
+                        (int) midPoint.x + eyeDistance + of * jump,
+                        (int) midPoint.y + eyeDistance + of * jump, drawPaint);
                 }
             }
         }
         return out;
     }
+
+    private Bitmap drawDots(Bitmap in) {
+        Bitmap out = in.copy(in.getConfig(), true);
+        Paint drawPaint = new Paint();
+        int radius = in.getWidth() / 200;
+        drawPaint.setStyle(Paint.Style.FILL);
+
+        Canvas canvas = new Canvas();
+        canvas.setBitmap(out);
+        int newBlack = Color.argb(0xff, 0x16, 0x16, 0x16);
+        for (int x = 0; x < in.getWidth(); x += radius * 4) {
+            for (int y = 0; y < in.getHeight(); y += radius * 4) {
+                int p = in.getPixel(x, y);
+//                int pixelAlpha=   Color.alpha(p);
+//                int red =  Color.red(p);
+//                int green=    Color.green(p);
+//                int blue=    Color.blue(p);
+//                int newColor = Color.argb(pixelAlpha, red + 5, green + 5, blue + 5);
+                if (p == Color.BLACK) {
+                    drawPaint.setColor(newBlack);
+                    canvas.drawCircle(x, y, radius, drawPaint);
+                } else if (p == Color.RED) {
+                    drawPaint.setColor(Color.MAGENTA);
+                    canvas.drawCircle(x, y, radius, drawPaint);
+                }
+            }
+        }
+
+        return out;
+    }
+
+
 }

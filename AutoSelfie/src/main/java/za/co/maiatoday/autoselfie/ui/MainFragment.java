@@ -75,10 +75,11 @@ public class MainFragment extends Fragment {   // Update status button
                 if (!activity.isTwitterLoggedInAlready()) {
                     activity.logInTwitter();
                 } else {
-                    selfie.processSelfie();
-                    imageView.setImageBitmap(selfie.getBmpToPost()); //TODO only for debug to see result here
-                    lblUpdate.setText(selfie.getStatus());
-                    activity.updateStatus(selfie);
+                    if (selfie.processSelfie()) {
+                        imageView.setImageBitmap(selfie.getBmpToPost()); //TODO only for debug to see result here
+                        lblUpdate.setText(selfie.getStatus());
+                        activity.updateStatus(selfie);
+                    }
                 }
             }
         });
