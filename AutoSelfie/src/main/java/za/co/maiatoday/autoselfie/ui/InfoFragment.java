@@ -34,6 +34,7 @@ public class InfoFragment extends Fragment {
         infoText = (TextView) view.findViewById(R.id.lblInfo);
         logInPrompt = (TextView) view.findViewById(R.id.tvTwitterPrompt);
 
+        Button btnMoreInfo = (Button) view.findViewById(R.id.btnGotoWeb);
         /**
          * Twitter login button click event will call loginToTwitter() function
          * */
@@ -63,6 +64,13 @@ public class InfoFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/search?q=%23autoselfie&s=typd&f=realtime")));
+            }
+        });
+
+        btnMoreInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.maiatoday.co.za")));
             }
         });
         return view;

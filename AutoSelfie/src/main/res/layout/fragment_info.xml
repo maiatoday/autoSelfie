@@ -46,6 +46,13 @@
                 android:layout_height="wrap_content"
                 android:text="Logout from Twitter"
                 />
+
+        <Button
+                android:id="@+id/btnGotoWeb"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="More info about #autoselfie"
+                />
             
 
     </LinearLayout>
