@@ -11,9 +11,12 @@ import android.util.Log;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -29,6 +32,14 @@ public class SelfieStatus {
     private FaceDetector detector;
     private FaceDetector.Face[] faces;
     int facesFound;
+
+
+    private Scalar mBlobColorRgba;
+    private Scalar mBlobColorHsv;
+    private ColorBlobDetector mDetector;
+    private Mat mSpectrum;
+    private Size SPECTRUM_SIZE;
+    private Scalar CONTOUR_COLOR;
 
     void SelfieStatus() {
 
@@ -63,13 +74,13 @@ public class SelfieStatus {
         case 0:
             cannyKonny();
             break;
-        default:
         case 1:
             primaryRoy();
             break;
-//        case 2:
-//            blobbyContours();
-//            break;
+        default:
+        case 2:
+            blobbyContours();
+            break;
 //        case 3:
 //            andAnotherOneForLuck();
 //            break;
@@ -132,10 +143,35 @@ public class SelfieStatus {
     private void blobbyContours() {
         //down to 2bit colour, find blobs then perimeters of blobs
         // contours overlap to make a grid
+
+        //setup blob detector
+        mDetector = new ColorBlobDetector();
+        mSpectrum = new Mat();
+        mBlobColorRgba = new Scalar(255);
+        mBlobColorHsv = new Scalar(255);
+        SPECTRUM_SIZE = new Size(200, 64);
+        CONTOUR_COLOR = new Scalar(255, 0, 0, 255);
+
+        //do blob detect
+        mDetector.process(mRgba);
+
+        //prepare image
         Imgproc.cvtColor(mRgba, mIntermediateMat, Imgproc.COLOR_RGB2GRAY, 4);
         Random r = new Random();
         int i1 = r.nextInt(20) + 128;
         Imgproc.threshold(mIntermediateMat, mRgba, i1, 255, 0);
+
+        //drawContours
+        List<MatOfPoint> contours = mDetector.getContours();
+        Log.i("SelfieStatus", "Contours count: " + contours.size());
+        Imgproc.drawContours(mRgba, contours, -1, CONTOUR_COLOR);
+
+//        Mat colorLabel = mRgba.submat(4, 68, 4, 68);
+//        colorLabel.setTo(mBlobColorRgba);
+//
+//        Mat spectrumLabel = mRgba.submat(4, 4 + mSpectrum.rows(), 70, 70 + mSpectrum.cols());
+//        mSpectrum.copyTo(spectrumLabel);
+
         bmpToPost = getImagefromMat(mRgba);
         status = "#autoselfie blobbly Contours";
     }
