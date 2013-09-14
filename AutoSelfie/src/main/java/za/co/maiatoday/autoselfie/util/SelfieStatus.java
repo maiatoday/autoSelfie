@@ -69,25 +69,25 @@ public class SelfieStatus {
         setupMats(orig);
         //Roll the dice to see which technique to use
         Random r = new Random();
-        int i1 = r.nextInt(5);
+        int i1 = r.nextInt(4);
         switch (i1) {
         case 0:
             cannyKonny();
             break;
+        default:
         case 1:
             primaryRoy();
             break;
-        default:
         case 2:
-            blobbyContours();
+            andAnotherOneForLuck();
             break;
-//        case 3:
-//            andAnotherOneForLuck();
-//            break;
-//        default:
+        case 3:
+            noPointInHoldingOn();
+            break;
 //        case 4:
-//            noPointInHoldingOn();
+//            blobbyContours();
 //            break;
+
         }
         Log.i("SelfieStatus", status);
         return true;
@@ -177,15 +177,22 @@ public class SelfieStatus {
     }
 
     private void andAnotherOneForLuck() {
-// the lucky one, orange, pink, red an yellow are lucky colours
+        // the lucky one, orange, pink, red an yellow are lucky colours
         // eyes all catlike and spinning wheels
 
-        bmpToPost = eyeLargeBlocks(orig, 5);
+        bmpToPost = eyeLargeBlocks(orig, 16);
         status = "#autoselfie and another one for luck";
     }
 
     private void noPointInHoldingOn() {
-        bmpToPost = eyeDelete(orig);
+        mRgbaInnerWindow = setInnerMatfromEyes(mRgba);
+        Imgproc.Canny(mRgba, mIntermediateMat, 80, 90);
+        Imgproc.cvtColor(mIntermediateMat, mIntermediateMat, Imgproc.COLOR_GRAY2BGRA, 4);
+        mGrayInnerWindow = setInnerMatfromEyes(mIntermediateMat);
+        if (mGrayInnerWindow != null && mRgbaInnerWindow != null) {
+            mRgbaInnerWindow.copyTo(mGrayInnerWindow);
+        }
+        bmpToPost = getImagefromMat(mIntermediateMat);
         status = "#autoselfie no point in holding on";
     }
 
@@ -202,7 +209,6 @@ public class SelfieStatus {
         mRgba = new Mat();
         mMatToPost = new Mat();
         mRgbaInnerWindow = null;
-        mGrayInnerWindow = null;
         mIntermediateMat = new Mat();
         Utils.bitmapToMat(orig, mRgba);
         Utils.bitmapToMat(orig, mMatToPost);
@@ -226,6 +232,27 @@ public class SelfieStatus {
 
         if (mGrayInnerWindow == null && !mMatToPost.empty())
             mGrayInnerWindow = mMatToPost.submat(top, top + height, left, left + width);
+    }
+
+    private Mat setInnerMatfromEyes(Mat orig) {
+        int top = 0;
+        int height = 0;
+        int left = 0;
+        int width = 0;
+        PointF midPoint = new PointF();
+        float eyeDistance = 0.0f;
+
+        if (facesFound > 0) {
+            faces[0].getMidPoint(midPoint);
+            eyeDistance = faces[0].eyesDistance();
+
+            top = (int) midPoint.y - orig.rows() / 24;
+            left = (int) midPoint.x - (int) eyeDistance;
+            height = orig.rows() / 12;
+            width = (int) eyeDistance * 2;
+            return orig.submat(top, top + height, left, left + width);
+        }
+        return null;
     }
 
     private Bitmap getImagefromMat(Mat result) {
@@ -350,7 +377,7 @@ public class SelfieStatus {
         Bitmap out = in.copy(in.getConfig(), true);
         Paint drawPaint = new Paint();
 
-        drawPaint.setColor(Color.GREEN);
+        drawPaint.setColor(Color.MAGENTA);
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeWidth(1);
 
@@ -360,7 +387,7 @@ public class SelfieStatus {
         PointF midPoint = new PointF();
         float eyeDistance = 0.0f;
         float confidence = 0.0f;
-        int jump = in.getWidth() / 16;
+        int jump = in.getWidth() / 64;
 
         if (facesFound > 0) {
             for (int index = 0; index < facesFound; ++index) {
@@ -373,10 +400,17 @@ public class SelfieStatus {
                         ", Eye distance: " + eyeDistance +
                         ", Mid Point: (" + midPoint.x + ", " + midPoint.y + ")");
                 for (int of = 0; of < count; of += 1) {
+                    if (of % 2 == 0) {
+                        drawPaint.setColor(Color.MAGENTA);
+                    } else if (of % 3 == 0) {
+                        drawPaint.setColor(Color.RED);
+                    } else {
+                        drawPaint.setColor(Color.YELLOW);
+                    }
                     canvas.drawRect((int) midPoint.x - eyeDistance + of,
-                        (int) midPoint.y - eyeDistance + of * jump,
+                        (int) midPoint.y - eyeDistance / 2 + of * jump,
                         (int) midPoint.x + eyeDistance + of * jump,
-                        (int) midPoint.y + eyeDistance + of * jump, drawPaint);
+                        (int) midPoint.y + eyeDistance / 2 + of * jump, drawPaint);
                 }
             }
         }
