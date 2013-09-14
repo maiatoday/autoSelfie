@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -75,21 +74,10 @@ public class MainFragment extends Fragment {   // Update status button
                 if (!activity.isTwitterLoggedInAlready()) {
                     activity.logInTwitter();
                 } else {
-                    // Call update status function
-                    // Get the status from EditText
-//                String status = txtUpdate.getText().toString();
-
-                    // Check for blank text
-//                if (status.trim().length() > 0) {
                     selfie.processSelfie();
                     imageView.setImageBitmap(selfie.getBmpToPost()); //TODO only for debug to see result here
+                    lblUpdate.setText(selfie.getStatus());
                     activity.updateStatus(selfie);
-//                } else {
-//                    // EditText is empty
-//                    Toast.makeText(getActivity(),
-//                            "Please enter status message", Toast.LENGTH_SHORT)
-//                            .show();
-//                }
                 }
             }
         });
@@ -103,10 +91,10 @@ public class MainFragment extends Fragment {   // Update status button
             }
         });
 
-        BitmapDrawable d = (BitmapDrawable) getResources().getDrawable(R.drawable.autoselfie_test);
-        if (d != null) {
-            selfie.setOrig(d.getBitmap());
-        }
+//        BitmapDrawable d = (BitmapDrawable) getResources().getDrawable(R.drawable.autoselfie_test);
+//        if (d != null) {
+//            selfie.setOrig(d.getBitmap());
+//        }
         return view;
     }
 
