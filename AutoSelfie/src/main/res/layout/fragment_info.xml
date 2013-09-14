@@ -9,6 +9,15 @@
                 tools:context=".MainActivity">
 
     <TextView
+            android:id="@+id/lblVersion"
+            android:text="Version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:textSize="12dp"
+            android:gravity="center"/>
+
+    <TextView
             android:id="@+id/lblInfo"
             android:text="You are the subject. Post a selfie. The code will interpret your image and tweet  the result. Find the images by searching for #autoselfie in twitter."
             android:layout_width="fill_parent"

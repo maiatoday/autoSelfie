@@ -179,8 +179,12 @@ public class SelfieStatus {
     private void andAnotherOneForLuck() {
         // the lucky one, orange, pink, red an yellow are lucky colours
         // eyes all catlike and spinning wheels
-
-        bmpToPost = eyeLargeBlocks(orig, 16);
+        Imgproc.cvtColor(mRgba, mIntermediateMat, Imgproc.COLOR_RGB2GRAY, 4);
+        Random r = new Random();
+        int i1 = r.nextInt(20) + 128;
+        Imgproc.threshold(mIntermediateMat, mRgba, i1, 255, 0);
+        bmpToPost = getImagefromMat(mRgba);
+        bmpToPost = eyeLargeBlocks(bmpToPost, 16);
         status = "#autoselfie and another one for luck";
     }
 

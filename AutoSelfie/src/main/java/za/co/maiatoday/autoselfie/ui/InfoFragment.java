@@ -2,6 +2,7 @@ package za.co.maiatoday.autoselfie.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -33,6 +34,13 @@ public class InfoFragment extends Fragment {
         btnLogoutTwitter = (Button) view.findViewById(R.id.btnLogoutTwitter);
         infoText = (TextView) view.findViewById(R.id.lblInfo);
         logInPrompt = (TextView) view.findViewById(R.id.tvTwitterPrompt);
+        try {
+            String verStr = "Version: " + getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0).versionName;
+            TextView version = (TextView) view.findViewById(R.id.lblVersion);
+            version.setText(verStr);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
 
         Button btnMoreInfo = (Button) view.findViewById(R.id.btnGotoWeb);
         /**
