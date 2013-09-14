@@ -1,6 +1,8 @@
 package za.co.maiatoday.autoselfie.ui;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -20,14 +22,17 @@ public class InfoFragment extends Fragment {
     Button btnLoginTwitter;
     // Logout button
     Button btnLogoutTwitter;
-    TextView lblUserName;
+    TextView infoText;
+    TextView logInPrompt;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_info, container, false);
 
         btnLoginTwitter = (Button) view.findViewById(R.id.btnLoginTwitter);
         btnLogoutTwitter = (Button) view.findViewById(R.id.btnLogoutTwitter);
-        lblUserName = (TextView) view.findViewById(R.id.lblUserName);
+        infoText = (TextView) view.findViewById(R.id.lblInfo);
+        logInPrompt = (TextView) view.findViewById(R.id.tvTwitterPrompt);
 
         /**
          * Twitter login button click event will call loginToTwitter() function
@@ -51,6 +56,13 @@ public class InfoFragment extends Fragment {
             public void onClick(View arg0) {
                 // Call logout twitter function
                 logoutFromTwitter();
+            }
+        });
+
+        infoText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/search?q=%23autoselfie&s=typd&f=realtime")));
             }
         });
         return view;
@@ -102,6 +114,7 @@ public class InfoFragment extends Fragment {
         // Hide buttons
         boolean isLoggedIn = isTwitterLoggedInAlready();
         btnLoginTwitter.setVisibility(isLoggedIn ? View.GONE : View.VISIBLE);
+        logInPrompt.setVisibility(isLoggedIn ? View.GONE : View.VISIBLE);
         btnLogoutTwitter.setVisibility(isLoggedIn ? View.VISIBLE : View.GONE);
     }
 }

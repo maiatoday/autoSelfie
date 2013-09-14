@@ -10,11 +10,12 @@
 
     <TextView
             android:id="@+id/lblInfo"
-            android:text="You are the subject. Post a selfie. The code will interpret your image and tweet  the result. Find the images by searching for #autoselfie."
+            android:text="You are the subject. Post a selfie. The code will interpret your image and tweet  the result. Find the images by searching for #autoselfie in twitter."
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_above="@+id/loginlinearLayout"
             android:textSize="18dp"
-            android:gravity="center_horizontal"/>
+            android:gravity="center"/>
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -22,7 +23,16 @@
             android:layout_alignParentBottom="true"
             android:layout_marginTop="30dip"
             android:orientation="vertical"
-            android:id="@+id/linearLayout">    
+            android:id="@+id/loginlinearLayout">
+           
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="You need to log in to twitter to participate."
+                android:id="@+id/tvTwitterPrompt"
+                android:gravity="center_horizontal"/> 
 
         <Button
                 android:id="@+id/btnLoginTwitter"
@@ -40,15 +50,5 @@
 
     </LinearLayout>
 
-    <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="You need to log in to twitter to participate."
-            android:id="@+id/textView"
-            android:layout_above="@+id/linearLayout"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="17dp"
-            android:gravity="center_horizontal"/>
 
 </RelativeLayout>
