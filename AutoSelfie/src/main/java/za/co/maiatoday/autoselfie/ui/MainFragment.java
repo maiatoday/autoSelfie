@@ -50,9 +50,10 @@ public class MainFragment extends Fragment {   // Update status button
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
-        imageView = (ImageView) view.findViewById(R.id.result);
+
         setHasOptionsMenu(true);
 
+        imageView = (ImageView) view.findViewById(R.id.result);
         btnSnap = (Button) view.findViewById(R.id.btnSnap);
         // All UI elements
         btnUpdateStatus = (Button) view.findViewById(R.id.btnUpdateStatus);
@@ -86,8 +87,15 @@ public class MainFragment extends Fragment {   // Update status button
 
             @Override
             public void onClick(View arg0) {
-//                openCamera();
                 openImageIntent();
+            }
+        });
+
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openImageIntent();
+
             }
         });
 
