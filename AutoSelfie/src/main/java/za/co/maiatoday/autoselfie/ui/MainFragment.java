@@ -76,9 +76,15 @@ public class MainFragment extends Fragment {   // Update status button
                     activity.logInTwitter();
                 } else {
                     if (selfie.processSelfie()) {
-                        imageView.setImageBitmap(selfie.getBmpToPost()); //TODO only for debug to see result here
+                        imageView.setImageBitmap(selfie.getBmpToPost());
                         lblUpdate.setText(selfie.getStatus());
                         activity.updateStatus(selfie);
+                        Runnable r = new Runnable() {
+                            public void run() {
+                                imageView.setImageBitmap(selfie.getOrig());
+                            }
+                        };
+                        imageView.postDelayed(r, 2000);
                     }
                 }
             }

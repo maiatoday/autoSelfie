@@ -33,7 +33,6 @@ public class SelfieStatus {
     private FaceDetector.Face[] faces;
     int facesFound;
 
-
     private Scalar mBlobColorRgba;
     private Scalar mBlobColorHsv;
     private ColorBlobDetector mDetector;
@@ -204,6 +203,8 @@ public class SelfieStatus {
     private Size mSizeRgba;
     private Size mSizeRgbaInner;
     private Mat mRgba;
+
+
     private Mat mMatToPost;
     private Mat mIntermediateMat;
     private Mat mRgbaInnerWindow;
@@ -451,5 +452,8 @@ public class SelfieStatus {
         return out;
     }
 
+    public Bitmap getOrig() {
+        return orig;
+    }
 
 }
