@@ -46,6 +46,7 @@ public class SelfieStatus implements OnTouchListener {
     private Size SPECTRUM_SIZE;
     private Scalar CONTOUR_COLOR;
     GlitchP5 glitchP5;
+    private int magic = 20;
 
     void SelfieStatus() {
     }
@@ -58,6 +59,7 @@ public class SelfieStatus implements OnTouchListener {
         this.orig = orig;
         this.bmpToPost = orig;
         processDone = false;
+        magic = orig.getWidth() / 16;
     }
 
     public Bitmap getBmpToPost() {
@@ -496,7 +498,7 @@ public class SelfieStatus implements OnTouchListener {
 
         case MotionEvent.ACTION_UP:
             Log.d("UP", "UP");
-            glitchP5.glitch(imagex, imagey, 20, 20, 20, 20, 1, 1.0f, 10, 40);
+            glitchP5.glitch(imagex, imagey, magic, magic, magic, magic, 1, 1.0f, 10, 40);
 
             break;
         }
