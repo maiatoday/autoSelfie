@@ -10,7 +10,7 @@ import za.co.maiatoday.autoselfie.util.MathsUtils;
  * Created by maia on 2013/09/20.
  */
 public class GlitchFX {
-    Bitmap orig;
+    Bitmap bitmap;
     int[] area = new int[0];
     int[] area_ = new int[0];
     int lastxPos;
@@ -22,23 +22,24 @@ public class GlitchFX {
     int[] pixels;
     int[] lastPixels;
 
-    public Bitmap getOrig() {
-        return orig;
+    public Bitmap getBitmap() {
+        return bitmap;
     }
 
 
-    GlitchFX(Bitmap p) {
-        this.orig = p;
-        lastPixels = new int[orig.getWidth() * orig.getHeight()];
+    GlitchFX(int w, int h) {
+        lastPixels = new int[w * h];
     }
 
-    void open() {
-        orig.getPixels(pixels, 0, 1, 0, 0, orig.getWidth(), orig.getHeight());
+    void open(Bitmap p) {
+        this.bitmap = p;
+        pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
+        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
     }
 
     void close() {
 
-        orig.setPixels(pixels, 0, 1, 0, 0, orig.getWidth(), orig.getHeight());
+        bitmap.setPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
     }
 
     void glitch(int xPos, int yPos, int w, int h, int sX, int sY) {
@@ -48,27 +49,27 @@ public class GlitchFX {
         if (area.length < area_.length) {
             for (int j = 0; j < area.length; j++) {
                 pixels[area[j]] = lastPixels[area_[j]];
-                // orig.pixels[area[j]] += orig.pixels[area_[j]] << shiftr;
+                // bitmap.pixels[area[j]] += bitmap.pixels[area_[j]] << shiftr;
             }
         } else {
             for (int j = 0; j < area_.length; j++) {
                 pixels[area[j]] += lastPixels[area_[j]] << shiftr;
-                // orig.pixels[area[j]] += orig.pixels[area_[j]] << shiftr;
+                // bitmap.pixels[area[j]] += bitmap.pixels[area_[j]] << shiftr;
             }
         }
     }
 
     void computeArea(int xPos, int yPos, int w, int h, int sX, int sY) {
         if (xPos != lastxPos || yPos != lastyPos || w != lastw || h != lasth || sX != lastsX || sY != lastsY) {
-            int startX = MathsUtils.constrain(xPos - w / 2, 0, orig.getWidth() - 1);
-            int startY = MathsUtils.constrain(yPos - h / 2, 0, orig.getHeight() - 1);
-            int endX = MathsUtils.constrain(xPos + w / 2, 0, orig.getWidth() - 1);
-            int endY = MathsUtils.constrain(yPos + h / 2, 0, orig.getHeight() - 1);
+            int startX = MathsUtils.constrain(xPos - w / 2, 0, bitmap.getWidth() - 1);
+            int startY = MathsUtils.constrain(yPos - h / 2, 0, bitmap.getHeight() - 1);
+            int endX = MathsUtils.constrain(xPos + w / 2, 0, bitmap.getWidth() - 1);
+            int endY = MathsUtils.constrain(yPos + h / 2, 0, bitmap.getHeight() - 1);
 
-            int startX_ = MathsUtils.constrain(xPos - w / 2 + sX, 0, orig.getWidth() - 1);
-            int startY_ = MathsUtils.constrain(yPos - h / 2 + sY, 0, orig.getHeight() - 1);
-            int endX_ = MathsUtils.constrain(xPos + w / 2 + sX, 0, orig.getWidth() - 1);
-            int endY_ = MathsUtils.constrain(yPos + h / 2 + sY, 0, orig.getHeight() - 1);
+            int startX_ = MathsUtils.constrain(xPos - w / 2 + sX, 0, bitmap.getWidth() - 1);
+            int startY_ = MathsUtils.constrain(yPos - h / 2 + sY, 0, bitmap.getHeight() - 1);
+            int endX_ = MathsUtils.constrain(xPos + w / 2 + sX, 0, bitmap.getWidth() - 1);
+            int endY_ = MathsUtils.constrain(yPos + h / 2 + sY, 0, bitmap.getHeight() - 1);
 
             w = Math.abs(startX - endX);
             h = Math.abs(startY - endY);
@@ -77,7 +78,7 @@ public class GlitchFX {
             int i = 0;
             for (int y = startY; y < endY; y++) {
                 for (int x = startX; x < endX; x++) {
-                    area[i] = orig.getWidth() * y + x;
+                    area[i] = bitmap.getWidth() * y + x;
                     i++;
                 }
             }
@@ -88,7 +89,7 @@ public class GlitchFX {
             i = 0;
             for (int y = startY_; y < endY_; y++) {
                 for (int x = startX_; x < endX_; x++) {
-                    area_[i] = orig.getWidth() * y + x;
+                    area_[i] = bitmap.getWidth() * y + x;
                     i++;
                 }
             }

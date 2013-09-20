@@ -13,7 +13,6 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -88,11 +87,11 @@ public class MainFragment extends Fragment {   // Update status button
                         activity.updateStatus(selfie);
                         if (doHide) {
                             Runnable r = new Runnable() {
-                            public void run() {
-                                imageView.setImageBitmap(selfie.getOrig());
-                            }
-                        };
-                        imageView.postDelayed(r, 2000);
+                                public void run() {
+                                    imageView.setImageBitmap(selfie.getOrig());
+                                }
+                            };
+                            imageView.postDelayed(r, 2000);
                         }
                     }
                 }
@@ -114,7 +113,6 @@ public class MainFragment extends Fragment {   // Update status button
                 imageView.setImageBitmap(selfie.getBmpToPost());
                 lblUpdate.setText(selfie.getStatus());
                 txtUpdate.setText(selfie.getStatus());
-                Log.d("MainFragment", "clicked Image");
 
             }
         });
@@ -138,11 +136,11 @@ public class MainFragment extends Fragment {   // Update status button
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
-                case REQUEST_IMAGE:
-                    processImage(data);
-                    imageView.setImageBitmap(selfie.getBmpToPost()); //TODO only for debug to see result here
-                    txtUpdate.setText(selfie.getStatus());
-                    break;
+            case REQUEST_IMAGE:
+                processImage(data);
+                imageView.setImageBitmap(selfie.getBmpToPost()); //TODO only for debug to see result here
+                txtUpdate.setText(selfie.getStatus());
+                break;
             }
         }
     }
@@ -227,7 +225,7 @@ public class MainFragment extends Fragment {   // Update status button
         } catch (Exception e) {
 
             Toast.makeText(getActivity(),
-                    "Problem loading file", Toast.LENGTH_LONG).show();
+                "Problem loading file", Toast.LENGTH_LONG).show();
         }
     }
 

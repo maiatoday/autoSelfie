@@ -9,17 +9,21 @@ import java.util.Random;
  * Ported from processing glitchP5 by maia on 2013/09/20.
  */
 public class GlitchP5 {
-    Bitmap p;
     GlitchFX glfx;
     ArrayList<TimedGlitcher> timedGlitchers = new ArrayList<TimedGlitcher>();
+    Bitmap bitmap;
 
     public GlitchP5(Bitmap p) {
-        this.p = p;
-        glfx = new GlitchFX(p);
+        glfx = new GlitchFX(p.getWidth(), p.getHeight());
+        bitmap = p.copy(p.getConfig(), true);
+    }
+
+    public Bitmap getGlitchedBitmap() {
+        return glfx.getBitmap();
     }
 
     public void run() {
-        glfx.open();
+        glfx.open(bitmap);
         for (int i = timedGlitchers.size() - 1; i >= 0; i--) {
             TimedGlitcher tg = timedGlitchers.get(i);
             tg.run();
