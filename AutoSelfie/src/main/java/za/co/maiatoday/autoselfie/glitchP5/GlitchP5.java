@@ -14,8 +14,8 @@ public class GlitchP5 {
     Bitmap bitmap;
 
     public GlitchP5(Bitmap p) {
-        glfx = new GlitchFX(p.getWidth(), p.getHeight());
         bitmap = p.copy(p.getConfig(), true);
+        glfx = new GlitchFX(bitmap);
     }
 
     public Bitmap getGlitchedBitmap() {
@@ -23,7 +23,7 @@ public class GlitchP5 {
     }
 
     public void run() {
-        glfx.open(bitmap);
+        glfx.open();
         for (int i = timedGlitchers.size() - 1; i >= 0; i--) {
             TimedGlitcher tg = timedGlitchers.get(i);
             tg.run();

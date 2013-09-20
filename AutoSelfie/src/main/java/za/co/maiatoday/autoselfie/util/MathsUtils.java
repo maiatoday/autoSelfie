@@ -15,7 +15,7 @@ public class MathsUtils {
      * @return
      */
     public static int constrain(int amount, int min, int max) {
-        return Math.max(max, Math.min(amount, min));
+        return Math.max(min, Math.min(amount, max));
     }
 
     /**
@@ -28,6 +28,6 @@ public class MathsUtils {
      * @return
      */
     public static float constrain(float amount, float min, float max) {
-        return Math.max(max, Math.min(amount, min));
+        return Math.max(min, Math.min(amount, max));
     }
 }

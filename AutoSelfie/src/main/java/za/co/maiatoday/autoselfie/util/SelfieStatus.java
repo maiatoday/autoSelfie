@@ -478,21 +478,25 @@ public class SelfieStatus implements OnTouchListener {
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (glitchP5 == null) return false;
-        glitchP5.run();
+        int viewWidth = v.getWidth();
+        int viewHeight = v.getHeight();
+        int imagex = (int) event.getX() * orig.getWidth() / viewWidth;
+        int imagey = (int) event.getY() * orig.getHeight() / viewHeight;
         switch (event.getAction()) {
         case MotionEvent.ACTION_DOWN:
             Log.d("DOWN", "DOWN");
-            glitchP5.glitch((int) event.getX(), (int) event.getY(), 200, 400, 200, 1200, 3, 1.0f, 10, 40);
+            glitchP5.run();
+//            glitchP5.glitch(imagex, imagey, 20, 20, 20, 20, 3, 1.0f, 10, 40);
             break;
 
         case MotionEvent.ACTION_MOVE:
             Log.d("MOVE", "MOVE");
-            glitchP5.glitch((int) event.getX(), (int) event.getY(), 200, 400, 200, 1200, 3, 1.0f, 10, 40);
+//            glitchP5.glitch(imagex, imagey, 20, 20, 20, 20, 3, 1.0f, 10, 40);
             break;
 
         case MotionEvent.ACTION_UP:
             Log.d("UP", "UP");
-            glitchP5.glitch((int) event.getX(), (int) event.getY(), 200, 400, 200, 1200, 3, 1.0f, 10, 40);
+            glitchP5.glitch(imagex, imagey, 20, 20, 20, 20, 1, 1.0f, 10, 40);
 
             break;
         }

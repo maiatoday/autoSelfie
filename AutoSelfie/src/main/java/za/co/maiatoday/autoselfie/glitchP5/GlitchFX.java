@@ -27,19 +27,19 @@ public class GlitchFX {
     }
 
 
-    GlitchFX(int w, int h) {
-        lastPixels = new int[w * h];
+    GlitchFX(Bitmap b) {
+        this.bitmap = b;
+        lastPixels = new int[bitmap.getWidth() * bitmap.getHeight()];
+        pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
     }
 
-    void open(Bitmap p) {
-        this.bitmap = p;
-        pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
+    void open() {
         bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
     }
 
     void close() {
-
         bitmap.setPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+        System.arraycopy(pixels, 0, lastPixels, 0, pixels.length);
     }
 
     void glitch(int xPos, int yPos, int w, int h, int sX, int sY) {
