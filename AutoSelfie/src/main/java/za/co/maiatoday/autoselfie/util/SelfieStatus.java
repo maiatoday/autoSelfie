@@ -50,12 +50,14 @@ public class SelfieStatus implements OnTouchListener {
     void SelfieStatus() {
     }
 
+    public void setProcessDone(boolean processDone) {
+        this.processDone = processDone;
+    }
 
     public void setOrig(Bitmap orig) {
         this.orig = orig;
         this.bmpToPost = orig;
         processDone = false;
-        glitchP5 = new GlitchP5(orig);
     }
 
     public Bitmap getBmpToPost() {
@@ -105,7 +107,7 @@ public class SelfieStatus implements OnTouchListener {
         }
         Log.i("SelfieStatus", status);
         processDone = true;
-        glitchP5 = new GlitchP5(orig);
+        glitchP5 = new GlitchP5(bmpToPost);
         return true;
     }
 
@@ -475,6 +477,7 @@ public class SelfieStatus implements OnTouchListener {
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        if (glitchP5 == null) return false;
         glitchP5.run();
         switch (event.getAction()) {
         case MotionEvent.ACTION_DOWN:

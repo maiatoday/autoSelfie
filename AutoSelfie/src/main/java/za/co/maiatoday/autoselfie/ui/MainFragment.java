@@ -102,6 +102,7 @@ public class MainFragment extends Fragment {   // Update status button
 
             @Override
             public void onClick(View arg0) {
+                selfie.setProcessDone(false);
                 openImageIntent();
             }
         });
