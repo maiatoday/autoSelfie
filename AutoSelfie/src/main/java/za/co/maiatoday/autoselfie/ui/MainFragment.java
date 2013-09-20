@@ -12,12 +12,15 @@ import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,13 +40,14 @@ public class MainFragment extends Fragment {   // Update status button
     private static final int REQUEST_IMAGE = 2;
     Button btnUpdateStatus;
     // EditText for update
-    TextView txtUpdate;
+    EditText txtUpdate;
     // lbl update
     TextView lblUpdate;
     private ImageView imageView;
     Button btnSnap;
 
     SelfieStatus selfie = new SelfieStatus();
+    private boolean doHide = false;
 
 
     @Override
@@ -57,8 +61,8 @@ public class MainFragment extends Fragment {   // Update status button
         btnSnap = (Button) view.findViewById(R.id.btnSnap);
         // All UI elements
         btnUpdateStatus = (Button) view.findViewById(R.id.btnUpdateStatus);
-        txtUpdate = (TextView) view.findViewById(R.id.txtUpdateStatus);
-        txtUpdate.setEnabled(false);
+        txtUpdate = (EditText) view.findViewById(R.id.txtUpdateStatus);
+        txtUpdate.setEnabled(true);
         lblUpdate = (TextView) view.findViewById(R.id.lblUpdate);
 
 
@@ -78,13 +82,18 @@ public class MainFragment extends Fragment {   // Update status button
                     if (selfie.processSelfie()) {
                         imageView.setImageBitmap(selfie.getBmpToPost());
                         lblUpdate.setText(selfie.getStatus());
+                        if (!TextUtils.isEmpty(txtUpdate.getText().toString())) {
+                            selfie.setStatus(txtUpdate.getText().toString());
+                        }
                         activity.updateStatus(selfie);
-                        Runnable r = new Runnable() {
+                        if (doHide) {
+                            Runnable r = new Runnable() {
                             public void run() {
                                 imageView.setImageBitmap(selfie.getOrig());
                             }
                         };
                         imageView.postDelayed(r, 2000);
+                        }
                     }
                 }
             }
@@ -101,10 +110,15 @@ public class MainFragment extends Fragment {   // Update status button
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openImageIntent();
+                selfie.processSelfie();
+                imageView.setImageBitmap(selfie.getBmpToPost());
+                lblUpdate.setText(selfie.getStatus());
+                txtUpdate.setText(selfie.getStatus());
+                Log.d("MainFragment", "clicked Image");
 
             }
         });
+        imageView.setOnTouchListener(selfie);
 
 //        BitmapDrawable d = (BitmapDrawable) getResources().getDrawable(R.drawable.autoselfie_test);
 //        if (d != null) {

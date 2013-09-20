@@ -31,7 +31,7 @@
             android:visibility="gone"/>
         
 
-    <TextView
+    <EditText
             android:id="@+id/txtUpdateStatus"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"

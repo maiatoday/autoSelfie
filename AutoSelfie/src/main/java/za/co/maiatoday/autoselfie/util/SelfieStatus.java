@@ -7,6 +7,9 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.media.FaceDetector;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -22,11 +25,12 @@ import java.util.Random;
 /**
  * Created by maia on 2013/08/22.
  */
-public class SelfieStatus {
+public class SelfieStatus implements OnTouchListener {
     private static final int DRIP_COUNT = 20;
     Bitmap bmpToPost;
     String status;
     Bitmap orig;
+    boolean processDone = false;
 
     private static final int MAX_FACES = 5;
     private FaceDetector detector;
@@ -41,13 +45,13 @@ public class SelfieStatus {
     private Scalar CONTOUR_COLOR;
 
     void SelfieStatus() {
-
-
     }
+
 
     public void setOrig(Bitmap orig) {
         this.orig = orig;
         this.bmpToPost = orig;
+        processDone = false;
     }
 
     public Bitmap getBmpToPost() {
@@ -59,9 +63,16 @@ public class SelfieStatus {
         return status;
     }
 
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public boolean processSelfie() {
         if (orig == null) {
             return false;
+        }
+        if (processDone) {
+            return true;
         }
         status = "#autoselfie";
         detectFaces();
@@ -89,6 +100,7 @@ public class SelfieStatus {
 
         }
         Log.i("SelfieStatus", status);
+        processDone = true;
         return true;
     }
 
@@ -456,4 +468,23 @@ public class SelfieStatus {
         return orig;
     }
 
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        //int action = event.getAction();
+        switch (event.getAction()) {
+        case MotionEvent.ACTION_DOWN:
+            Log.d("DOWN", "DOWN");
+            break;
+
+        case MotionEvent.ACTION_MOVE:
+            Log.d("MOVE", "MOVE");
+            break;
+
+        case MotionEvent.ACTION_UP:
+            Log.d("UP", "UP");
+
+            break;
+        }
+        return false;
+    }
 }

@@ -48,7 +48,7 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     private static SharedPreferences mSharedPreferences;
     private TwitterHelper twitHelper;
 
-    boolean debugNoTweet = false;
+    boolean debugNoTweet = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
