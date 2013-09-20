@@ -27,22 +27,22 @@ public class GlitchFX {
     }
 
 
-    GlitchFX(Bitmap b) {
+    public GlitchFX(Bitmap b) {
         this.bitmap = b;
         lastPixels = new int[bitmap.getWidth() * bitmap.getHeight()];
         pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
     }
 
-    void open() {
+    public void open() {
         bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
     }
 
-    void close() {
+    public void close() {
         bitmap.setPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
         System.arraycopy(pixels, 0, lastPixels, 0, pixels.length);
     }
 
-    void glitch(int xPos, int yPos, int w, int h, int sX, int sY) {
+    public void glitch(int xPos, int yPos, int w, int h, int sX, int sY) {
         computeArea(xPos, yPos, w, h, sX, sY);
         Random r = new Random();
         int shiftr = r.nextInt(16);

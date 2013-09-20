@@ -22,7 +22,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.List;
 import java.util.Random;
 
-import za.co.maiatoday.autoselfie.glitchP5.GlitchP5;
+import za.co.maiatoday.autoselfie.glitchP5.GlitchFX;
 
 /**
  * Created by maia on 2013/08/22.
@@ -45,8 +45,10 @@ public class SelfieStatus implements OnTouchListener {
     private Mat mSpectrum;
     private Size SPECTRUM_SIZE;
     private Scalar CONTOUR_COLOR;
-    GlitchP5 glitchP5;
+    //    GlitchP5 glitchP5;
+    GlitchFX glitchfx;
     private int magic = 20;
+    private int i1 = 0;
 
     void SelfieStatus() {
     }
@@ -59,10 +61,24 @@ public class SelfieStatus implements OnTouchListener {
         this.orig = orig;
         this.bmpToPost = orig;
         processDone = false;
-        magic = orig.getWidth() / 16;
+        magic = orig.getWidth() / 8;
     }
 
     public Bitmap getBmpToPost() {
+        switch (i1) {
+        case 0:
+            bmpToPost = eyeRedDrips(bmpToPost);
+            break;
+        case 1:
+            bmpToPost = eyeLargeBlocks(bmpToPost, 1);
+            break;
+        case 2:
+            bmpToPost = eyeLargeBlocks(bmpToPost, 16);
+            break;
+        case 3:
+            putEyesInAfterTheFact(bmpToPost);
+            break;
+        }
 
         return bmpToPost;
     }
@@ -87,7 +103,7 @@ public class SelfieStatus implements OnTouchListener {
         setupMats(orig);
         //Roll the dice to see which technique to use
         Random r = new Random();
-        int i1 = r.nextInt(4);
+        i1 = r.nextInt(4);
         switch (i1) {
         case 0:
             cannyKonny();
@@ -109,7 +125,8 @@ public class SelfieStatus implements OnTouchListener {
         }
         Log.i("SelfieStatus", status);
         processDone = true;
-        glitchP5 = new GlitchP5(bmpToPost);
+//        glitchP5 = new GlitchP5(bmpToPost);
+        glitchfx = new GlitchFX(bmpToPost);
         return true;
     }
 
@@ -218,6 +235,15 @@ public class SelfieStatus implements OnTouchListener {
         }
         bmpToPost = getImagefromMat(mIntermediateMat);
         status = "#autoselfie no point in holding on";
+    }
+
+    private Bitmap putEyesInAfterTheFact(Bitmap b) {
+
+        Utils.bitmapToMat(b, mIntermediateMat);
+        mGrayInnerWindow = setInnerMatfromEyes(mIntermediateMat);
+        mRgbaInnerWindow.copyTo(mGrayInnerWindow);
+        bmpToPost = getImagefromMat(mIntermediateMat);
+        return bmpToPost;
     }
 
     private Size mSize0;
@@ -479,7 +505,8 @@ public class SelfieStatus implements OnTouchListener {
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if (glitchP5 == null) return false;
+//        if (glitchP5 == null) return false;
+        if (glitchfx == null) return false;
         int viewWidth = v.getWidth();
         int viewHeight = v.getHeight();
         int imagex = (int) event.getX() * orig.getWidth() / viewWidth;
@@ -487,22 +514,25 @@ public class SelfieStatus implements OnTouchListener {
         switch (event.getAction()) {
         case MotionEvent.ACTION_DOWN:
             Log.d("DOWN", "DOWN");
-            glitchP5.run();
-//            glitchP5.glitch(imagex, imagey, 20, 20, 20, 20, 3, 1.0f, 10, 40);
+//            glitchP5.run();
+            glitchfx.open();
             break;
 
         case MotionEvent.ACTION_MOVE:
             Log.d("MOVE", "MOVE");
 //            glitchP5.glitch(imagex, imagey, 20, 20, 20, 20, 3, 1.0f, 10, 40);
+            glitchfx.glitch(imagex, imagey, magic, magic, magic, magic);
             break;
 
         case MotionEvent.ACTION_UP:
             Log.d("UP", "UP");
-            glitchP5.glitch(imagex, imagey, magic, magic, magic, magic, 1, 1.0f, 10, 40);
+//            glitchP5.glitch(imagex, imagey, magic, magic, magic, magic, 1, 1.0f, 10, 40);
+            glitchfx.close();
 
             break;
         }
-        bmpToPost = glitchP5.getGlitchedBitmap();
+//        bmpToPost = glitchP5.getGlitchedBitmap();
+        bmpToPost = glitchfx.getBitmap();
         return false;
     }
 }
