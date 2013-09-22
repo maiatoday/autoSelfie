@@ -7,7 +7,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,17 +20,18 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -39,19 +45,19 @@ import za.co.maiatoday.autoselfie.util.SelfieStatus;
 /**
  * Created by maia on 2013/09/01.
  */
-public class MainFragment extends Fragment {   // Update status button
+public class MainFragment extends Fragment implements View.OnTouchListener {   // Update status button
     private static final int REQUEST_IMAGE = 2;
     Button btnUpdateStatus;
-    // EditText for update
     EditText txtUpdate;
-    // lbl update
-    TextView lblUpdate;
     private ImageView imageView;
     Button btnSnap;
 
     SelfieStatus selfie = new SelfieStatus();
-    private boolean doHide = false;
 
+    private Path path;
+    private int pathColor = Color.RED;
+    private boolean doHide = false;
+    private Bitmap bitmap;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -66,7 +72,6 @@ public class MainFragment extends Fragment {   // Update status button
         btnUpdateStatus = (Button) view.findViewById(R.id.btnUpdateStatus);
         txtUpdate = (EditText) view.findViewById(R.id.txtUpdateStatus);
         txtUpdate.setEnabled(true);
-        lblUpdate = (TextView) view.findViewById(R.id.lblUpdate);
 
 
         /**
@@ -84,7 +89,6 @@ public class MainFragment extends Fragment {   // Update status button
                 } else {
                     if (selfie.processSelfie()) {
                         imageView.setImageBitmap(selfie.getBmpToPost());
-                        lblUpdate.setText(selfie.getStatus());
                         if (!TextUtils.isEmpty(txtUpdate.getText().toString())) {
                             selfie.setStatus(txtUpdate.getText().toString());
                         }
@@ -116,13 +120,12 @@ public class MainFragment extends Fragment {   // Update status button
             public void onClick(View v) {
                 selfie.processSelfie();
                 imageView.setImageBitmap(selfie.getBmpToPost());
-                lblUpdate.setText(selfie.getStatus());
                 txtUpdate.setText(selfie.getStatus());
 
             }
         });
 
-        imageView.setOnTouchListener(selfie);
+        imageView.setOnTouchListener(this);
 
 //        BitmapDrawable d = (BitmapDrawable) getResources().getDrawable(R.drawable.autoselfie_test);
 //        if (d != null) {
@@ -251,7 +254,7 @@ public class MainFragment extends Fragment {   // Update status button
             selectedImageUri = data == null ? null : data.getData();
         }
         try {
-            Bitmap bitmap = ImageUtils.getSizedBitmap(getActivity(), selectedImageUri, imageView.getHeight());
+            bitmap = ImageUtils.getSizedBitmap(getActivity(), selectedImageUri, imageView.getHeight());
             if (bitmap != null) {
                 selfie.setOrig(bitmap);
                 imageView.setImageBitmap(bitmap);
@@ -263,6 +266,65 @@ public class MainFragment extends Fragment {   // Update status button
             Toast.makeText(getActivity(),
                 "Problem loading file", Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (bitmap != null) {
+            int imagex = (int) event.getX();
+            int imagey = (int) event.getY();
+            switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                path = new Path();
+                path.moveTo(imagex, imagey);
+                Log.d("DOWN", "DOWN");
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                Log.d("MOVE", "MOVE");
+                path.lineTo(imagex, imagey);
+                break;
+
+            case MotionEvent.ACTION_UP:
+                Log.d("UP", "UP");
+                RectF bounds = new RectF();
+                path.computeBounds(bounds, false);
+                selfie.glitchImage(convertFromViewToImage(bounds));
+                bitmap = drawPath(selfie.getBmpToPost(), path, pathColor);
+                imageView.setImageBitmap(bitmap); //TODO only for debug to see result here
+                break;
+            }
+        }
+        return false;
+    }
+
+    private RectF convertFromViewToImage(RectF bounds) {
+        int viewWidth = imageView.getWidth();
+        int viewHeight = imageView.getHeight();
+        int origWidth = bitmap.getWidth();
+        int origHeight = bitmap.getHeight();
+        //TODO compensate for orientation of screen and image
+        //TODO remove blank space at top bottom if necessary
+        float widthFactor = (float) origWidth / (float) viewWidth;
+        float heightFactor = (float) origHeight / (float) viewHeight;
+        RectF transBounds = new RectF();
+        transBounds.set(bounds.left * widthFactor, bounds.top * heightFactor, bounds.right * widthFactor, bounds.bottom * heightFactor);
+        return transBounds;
+    }
+
+    private Bitmap drawPath(Bitmap in, Path path, int pathColor) {
+        Bitmap out = in.copy(in.getConfig(), true);
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setStrokeWidth(10);
+        paint.setColor(pathColor);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        Canvas canvas = new Canvas();
+        canvas.setBitmap(out);
+        canvas.drawPath(path, paint);
+        return out;
+
     }
 
 }

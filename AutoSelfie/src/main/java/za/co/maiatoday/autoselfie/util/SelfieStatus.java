@@ -4,14 +4,10 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.media.FaceDetector;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnTouchListener;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -29,7 +25,7 @@ import za.co.maiatoday.autoselfie.glitchP5.GlitchFX;
 /**
  * Created by maia on 2013/08/22.
  */
-public class SelfieStatus implements OnTouchListener {
+public class SelfieStatus {
     private static final int DRIP_COUNT = 20;
     Bitmap bmpToPost;
     String status;
@@ -51,8 +47,6 @@ public class SelfieStatus implements OnTouchListener {
     GlitchFX glitchfx;
     private int magic = 20;
     private int i1 = 0;
-    private Path path;
-    private int pathColor = Color.RED;
 
     void SelfieStatus() {
     }
@@ -507,56 +501,14 @@ public class SelfieStatus implements OnTouchListener {
         return out;
     }
 
-    private Bitmap drawPath(Bitmap in, Path path) {
-        Bitmap out = in.copy(in.getConfig(), true);
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setStrokeWidth(10);
-        paint.setColor(pathColor);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeJoin(Paint.Join.ROUND);
-        Canvas canvas = new Canvas();
-        canvas.setBitmap(out);
-        canvas.drawPath(path, paint);
-        return out;
 
+    public void glitchImage(RectF bounds) {
+        if (glitchfx == null) return;
+        glitchfx.open();
+        glitchfx.glitch((int) bounds.centerX(), (int) bounds.centerY(), (int) bounds.width(), (int) bounds.height(), magic, magic);
+        glitchfx.close();
+        bmpToPost = glitchfx.getBitmap();
     }
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-//        if (glitchP5 == null) return false;
-        if (glitchfx == null) return false;
-        int viewWidth = v.getWidth();
-        int viewHeight = v.getHeight();
-        int origWidth = orig.getWidth();
-        int origHeight = orig.getHeight();
-        int imagex = (int) event.getX() * origWidth / viewWidth;
-        int imagey = (int) event.getY() * origHeight / viewHeight;
-        switch (event.getAction()) {
-        case MotionEvent.ACTION_DOWN:
-            path = new Path();
-            path.moveTo(imagex, imagey);
-            Log.d("DOWN", "DOWN");
-            break;
 
-        case MotionEvent.ACTION_MOVE:
-            Log.d("MOVE", "MOVE");
-            path.lineTo(imagex, imagey);
-            pathColor = orig.getPixel(imagex, imagey);
-            break;
-
-        case MotionEvent.ACTION_UP:
-            Log.d("UP", "UP");
-            RectF bounds = new RectF();
-            path.computeBounds(bounds, false);
-            glitchfx.open();
-            glitchfx.glitch((int) bounds.centerX(), (int) bounds.centerY(), (int) bounds.width(), (int) bounds.height(), magic, magic);
-            glitchfx.close();
-            bmpToPost = glitchfx.getBitmap();
-            bmpToPost = drawPath(bmpToPost, path);
-            //TODO need to recycle bitmaps?
-            break;
-        }
-        return false;
-    }
 }
