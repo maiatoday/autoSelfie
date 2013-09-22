@@ -4,7 +4,9 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.media.FaceDetector;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -49,6 +51,8 @@ public class SelfieStatus implements OnTouchListener {
     GlitchFX glitchfx;
     private int magic = 20;
     private int i1 = 0;
+    private Path path;
+    private int pathColor = Color.RED;
 
     void SelfieStatus() {
     }
@@ -57,11 +61,15 @@ public class SelfieStatus implements OnTouchListener {
         this.processDone = processDone;
     }
 
+    public Bitmap getOrig() {
+        return orig;
+    }
+
     public void setOrig(Bitmap orig) {
         this.orig = orig;
         this.bmpToPost = orig;
         processDone = false;
-        magic = orig.getWidth() / 8;
+        magic = orig.getWidth() / 16;
     }
 
     public Bitmap getBmpToPost() {
@@ -499,8 +507,19 @@ public class SelfieStatus implements OnTouchListener {
         return out;
     }
 
-    public Bitmap getOrig() {
-        return orig;
+    private Bitmap drawPath(Bitmap in, Path path) {
+        Bitmap out = in.copy(in.getConfig(), true);
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setStrokeWidth(10);
+        paint.setColor(pathColor);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        Canvas canvas = new Canvas();
+        canvas.setBitmap(out);
+        canvas.drawPath(path, paint);
+        return out;
+
     }
 
     @Override
@@ -509,30 +528,35 @@ public class SelfieStatus implements OnTouchListener {
         if (glitchfx == null) return false;
         int viewWidth = v.getWidth();
         int viewHeight = v.getHeight();
-        int imagex = (int) event.getX() * orig.getWidth() / viewWidth;
-        int imagey = (int) event.getY() * orig.getHeight() / viewHeight;
+        int origWidth = orig.getWidth();
+        int origHeight = orig.getHeight();
+        int imagex = (int) event.getX() * origWidth / viewWidth;
+        int imagey = (int) event.getY() * origHeight / viewHeight;
         switch (event.getAction()) {
         case MotionEvent.ACTION_DOWN:
+            path = new Path();
+            path.moveTo(imagex, imagey);
             Log.d("DOWN", "DOWN");
-//            glitchP5.run();
-            glitchfx.open();
             break;
 
         case MotionEvent.ACTION_MOVE:
             Log.d("MOVE", "MOVE");
-//            glitchP5.glitch(imagex, imagey, 20, 20, 20, 20, 3, 1.0f, 10, 40);
-            glitchfx.glitch(imagex, imagey, magic, magic, magic, magic);
+            path.lineTo(imagex, imagey);
+            pathColor = orig.getPixel(imagex, imagey);
             break;
 
         case MotionEvent.ACTION_UP:
             Log.d("UP", "UP");
-//            glitchP5.glitch(imagex, imagey, magic, magic, magic, magic, 1, 1.0f, 10, 40);
+            RectF bounds = new RectF();
+            path.computeBounds(bounds, false);
+            glitchfx.open();
+            glitchfx.glitch((int) bounds.centerX(), (int) bounds.centerY(), (int) bounds.width(), (int) bounds.height(), magic, magic);
             glitchfx.close();
-
+            bmpToPost = glitchfx.getBitmap();
+            bmpToPost = drawPath(bmpToPost, path);
+            //TODO need to recycle bitmaps?
             break;
         }
-//        bmpToPost = glitchP5.getGlitchedBitmap();
-        bmpToPost = glitchfx.getBitmap();
         return false;
     }
 }

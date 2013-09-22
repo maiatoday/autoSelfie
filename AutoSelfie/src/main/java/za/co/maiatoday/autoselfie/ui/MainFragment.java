@@ -2,10 +2,12 @@ package za.co.maiatoday.autoselfie.ui;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -13,11 +15,13 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -117,6 +121,7 @@ public class MainFragment extends Fragment {   // Update status button
 
             }
         });
+
         imageView.setOnTouchListener(selfie);
 
 //        BitmapDrawable d = (BitmapDrawable) getResources().getDrawable(R.drawable.autoselfie_test);
@@ -124,6 +129,34 @@ public class MainFragment extends Fragment {   // Update status button
 //            selfie.setOrig(d.getBitmap());
 //        }
         return view;
+    }
+
+    private void getImageMatrixInfo(Bitmap orig) {
+        Display display = ((WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        int orientation = display.getOrientation();
+        float rowStart = 0, rowEnd = 0, columnStart = 0, columnEnd = 0;
+
+        int viewWidth = imageView.getWidth();
+        int viewHeight = imageView.getHeight();
+        int origWidth = orig.getWidth();
+        int origHeight = orig.getHeight();
+        if (orientation == 0) {
+            final Matrix matrix = imageView.getImageMatrix();
+            float[] values = new float[9];
+            matrix.getValues(values);
+            rowStart = values[0];
+            columnStart = values[5];
+            rowEnd = imageView.getWidth() - rowStart;
+            columnEnd = imageView.getHeight() - columnStart;
+        } else if (orientation == 1) {
+            final Matrix matrix = imageView.getImageMatrix();
+            float[] values = new float[9];
+            matrix.getValues(values);
+            rowStart = values[2];
+            columnStart = values[3];
+            rowEnd = imageView.getWidth() - rowStart;
+            columnEnd = imageView.getHeight() - columnStart;
+        }
     }
 
     @Override
@@ -222,6 +255,8 @@ public class MainFragment extends Fragment {   // Update status button
             if (bitmap != null) {
                 selfie.setOrig(bitmap);
                 imageView.setImageBitmap(bitmap);
+                getImageMatrixInfo(bitmap);
+
             }
         } catch (Exception e) {
 
