@@ -21,12 +21,14 @@
             android:layout_weight="1"
             android:layout_gravity="center_horizontal"
             android:scaleType="fitCenter"
+            android:src="@drawable/autoselfie_help"
             />
 
     <EditText
             android:id="@+id/txtUpdateStatus"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             />
 
     <Button

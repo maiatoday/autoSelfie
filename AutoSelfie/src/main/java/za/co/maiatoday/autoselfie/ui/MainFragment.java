@@ -53,8 +53,8 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
     private Path path;
     private int pathColor = Color.RED;
     private boolean debugHide = true;
-    private boolean debugSaveFile = true;
-    private boolean debugTweet = false;
+    private boolean debugSaveFile = false;
+    private boolean debugTweet = true;
     private Bitmap bitmap;
     private Matrix inverseMatrix = new Matrix();
 
@@ -70,8 +70,6 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
         // All UI elements
         btnUpdateStatus = (Button) view.findViewById(R.id.btnUpdateStatus);
         txtUpdate = (EditText) view.findViewById(R.id.txtUpdateStatus);
-        txtUpdate.setEnabled(true);
-
 
         /**
          * Button click event to Update Status, will call UpdateTwitterStatusTask()
