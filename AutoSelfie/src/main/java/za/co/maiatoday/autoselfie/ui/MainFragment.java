@@ -115,9 +115,10 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                selfie.processSelfie();
-                imageView.setImageBitmap(selfie.getBmpToPost());
-                txtUpdate.setText(selfie.getStatus());
+                if (selfie.processSelfie()) {
+                    imageView.setImageBitmap(selfie.getBmpToPost());
+                    txtUpdate.setText(selfie.getStatus());
+                }
 
             }
         });
@@ -237,18 +238,18 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
             switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 path = new Path();
-                path.moveTo(event.getX(), event.getX());
+                path.moveTo(event.getX(), event.getY());
 //                Log.d("DOWN", "DOWN");
                 break;
 
             case MotionEvent.ACTION_MOVE:
 //                Log.d("MOVE", "MOVE");
-                path.lineTo(event.getX(), event.getX());
+                path.lineTo(event.getX(), event.getY());
                 break;
 
             case MotionEvent.ACTION_UP:
 //                Log.d("UP", "UP");
-                path.lineTo(event.getX(), event.getX());
+                path.lineTo(event.getX(), event.getY());
                 RectF bounds = new RectF();
                 path.computeBounds(bounds, false);
                 selfie.glitchImage(convertFromViewToImage(bounds));
