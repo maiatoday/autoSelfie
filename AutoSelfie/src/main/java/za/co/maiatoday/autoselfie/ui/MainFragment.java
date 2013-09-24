@@ -2,7 +2,6 @@ package za.co.maiatoday.autoselfie.ui;
 
 import android.app.Activity;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -20,15 +19,12 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
-import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -127,18 +123,12 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
         });
 
         imageView.setOnTouchListener(this);
-
-//        BitmapDrawable d = (BitmapDrawable) getResources().getDrawable(R.drawable.autoselfie_test);
-//        if (d != null) {
-//            selfie.setOrig(d.getBitmap());
-//        }
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        OnTwitterRequest activity = (OnTwitterRequest) getActivity();
     }
 
     @Override
@@ -148,7 +138,7 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
             switch (requestCode) {
             case REQUEST_IMAGE:
                 processImage(data);
-                imageView.setImageBitmap(selfie.getBmpToPost()); //TODO only for debug to see result here
+                imageView.setImageBitmap(selfie.getBmpToPost());
                 txtUpdate.setText(selfie.getStatus());
                 break;
             }
@@ -244,27 +234,26 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (bitmap != null) {
-            int imagex = (int) event.getX();
-            int imagey = (int) event.getY();
             switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 path = new Path();
-                path.moveTo(imagex, imagey);
-                Log.d("DOWN", "DOWN");
+                path.moveTo(event.getX(), event.getX());
+//                Log.d("DOWN", "DOWN");
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                Log.d("MOVE", "MOVE");
-                path.lineTo(imagex, imagey);
+//                Log.d("MOVE", "MOVE");
+                path.lineTo(event.getX(), event.getX());
                 break;
 
             case MotionEvent.ACTION_UP:
-                Log.d("UP", "UP");
+//                Log.d("UP", "UP");
+                path.lineTo(event.getX(), event.getX());
                 RectF bounds = new RectF();
                 path.computeBounds(bounds, false);
                 selfie.glitchImage(convertFromViewToImage(bounds));
                 bitmap = drawPath(selfie.getBmpToPost(), path, pathColor);
-                imageView.setImageBitmap(bitmap); //TODO only for debug to see result here
+                imageView.setImageBitmap(bitmap);
                 break;
             }
         }
@@ -275,66 +264,6 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
         RectF transBounds = new RectF();
         inverseMatrix.mapRect(transBounds, bounds);
         return transBounds;
-    }
-
-    private static int[] getBitmapOffset(ImageView img, Boolean includeLayout) {
-        int[] offset = new int[2];
-        float[] values = new float[9];
-
-        Matrix m = img.getImageMatrix();
-        m.getValues(values);
-
-        offset[0] = (int) values[Matrix.MTRANS_X];
-        offset[1] = (int) values[Matrix.MTRANS_Y];
-
-        if (includeLayout) {
-            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) img.getLayoutParams();
-            int paddingTop = (int) (img.getPaddingTop());
-            int paddingLeft = (int) (img.getPaddingLeft());
-
-            offset[0] += paddingTop + lp.topMargin;
-            offset[1] += paddingLeft + lp.leftMargin;
-        }
-        return offset;
-    }
-
-    private static float[] getBitmapScale(ImageView img, Bitmap b, int[] offset) {
-        float[] scale = new float[2];
-        int viewWidth = img.getWidth();
-        int viewHeight = img.getHeight();
-        int origWidth = b.getWidth();
-        int origHeight = b.getHeight();
-        scale[0] = (float) origWidth / (float) viewWidth;
-        scale[1] = (float) origHeight / (float) viewHeight;
-        return scale;
-    }
-
-    private void getImageMatrixInfo(Bitmap orig) {
-        Display display = ((WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-        int orientation = display.getOrientation();
-        float rowStart = 0, rowEnd = 0, columnStart = 0, columnEnd = 0;
-
-        int viewWidth = imageView.getWidth();
-        int viewHeight = imageView.getHeight();
-        int origWidth = orig.getWidth();
-        int origHeight = orig.getHeight();
-        if (orientation == 0) {
-            final Matrix matrix = imageView.getImageMatrix();
-            float[] values = new float[9];
-            matrix.getValues(values);
-            rowStart = values[0];
-            columnStart = values[5];
-            rowEnd = imageView.getWidth() - rowStart;
-            columnEnd = imageView.getHeight() - columnStart;
-        } else if (orientation == 1) {
-            final Matrix matrix = imageView.getImageMatrix();
-            float[] values = new float[9];
-            matrix.getValues(values);
-            rowStart = values[2];
-            columnStart = values[3];
-            rowEnd = imageView.getWidth() - rowStart;
-            columnEnd = imageView.getHeight() - columnStart;
-        }
     }
 
     private Bitmap drawPath(Bitmap in, Path path, int pathColor) {
