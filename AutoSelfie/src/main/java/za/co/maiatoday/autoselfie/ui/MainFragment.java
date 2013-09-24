@@ -52,7 +52,9 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
 
     private Path path;
     private int pathColor = Color.RED;
-    private boolean doHide = false;
+    private boolean debugHide = true;
+    private boolean debugSaveFile = true;
+    private boolean debugTweet = false;
     private Bitmap bitmap;
     private Matrix inverseMatrix = new Matrix();
 
@@ -89,8 +91,13 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
                         if (!TextUtils.isEmpty(txtUpdate.getText().toString())) {
                             selfie.setStatus(txtUpdate.getText().toString());
                         }
-                        activity.updateStatus(selfie);
-                        if (doHide) {
+                        if (debugSaveFile) {
+                            ImageUtils.saveBitmapToFile(selfie.getBmpToPost(), getActivity());
+                        }
+                        if (debugTweet) {
+                            activity.updateStatus(selfie);
+                        }
+                        if (debugHide) {
                             Runnable r = new Runnable() {
                                 public void run() {
                                     imageView.setImageBitmap(selfie.getOrig());
@@ -253,8 +260,8 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
                 RectF bounds = new RectF();
                 path.computeBounds(bounds, false);
                 selfie.glitchImage(convertFromViewToImage(bounds));
-                bitmap = drawPath(selfie.getBmpToPost(), path, pathColor);
-                imageView.setImageBitmap(bitmap);
+//                bitmap = drawPath(selfie.getBmpToPost(), path, pathColor); //The path is in the wrong place
+//                imageView.setImageBitmap(selfie.getBmpToPost());
                 break;
             }
         }

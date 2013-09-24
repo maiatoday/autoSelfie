@@ -48,8 +48,6 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     private static SharedPreferences mSharedPreferences;
     private TwitterHelper twitHelper;
 
-    boolean debugNoTweet = true;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
@@ -293,10 +291,9 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
     @Override
     public void updateStatus(SelfieStatus status) {
         selfie = status;
-        if (!debugNoTweet) {
-            UpdateTwitterStatusTask t = new UpdateTwitterStatusTask();
-            t.execute(selfie.getStatus());
-        }
+        UpdateTwitterStatusTask t = new UpdateTwitterStatusTask();
+        t.execute(selfie.getStatus());
+
     }
 
     @Override
