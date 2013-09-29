@@ -46,7 +46,24 @@ public class SelfieStatus {
     //    GlitchP5 glitchP5;
     GlitchFX glitchfx;
     private int magic = 20;
-    private int i1 = 0;
+    private WaysToChange waysToChange = WaysToChange.EIGHT_BIT_ROY;
+
+    Random r = new Random(System.currentTimeMillis());
+
+    enum WaysToChange {
+        CANNNY_KONNY,
+        EIGHT_BIT_ROY,
+        ANOTHER_ONE_FOR_LUCK,
+        NO_POINT_IN_HOLDING_ON,
+        GLITCHY_GOODNESS_DELUXE;
+        private static final int size = WaysToChange.values().length;
+
+        public static WaysToChange rollDice(Random r) {
+            //Roll the dice to see which technique to use
+            return WaysToChange.values()[r.nextInt(size)];
+        }
+
+    }
 
     void SelfieStatus() {
     }
@@ -67,17 +84,20 @@ public class SelfieStatus {
     }
 
     public Bitmap getBmpToPost() {
-        switch (i1) {
-        case 0:
+        switch (waysToChange) {
+        case CANNNY_KONNY:
             bmpToPost = eyeRedDrips(bmpToPost);
             break;
-        case 1:
+        case EIGHT_BIT_ROY:
             bmpToPost = eyeLargeBlocks(bmpToPost, 1);
             break;
-        case 2:
+        case ANOTHER_ONE_FOR_LUCK:
             bmpToPost = eyeLargeBlocks(bmpToPost, 16);
             break;
-        case 3:
+        case NO_POINT_IN_HOLDING_ON:
+            putEyesInAfterTheFact(bmpToPost);
+            break;
+        case GLITCHY_GOODNESS_DELUXE:
             putEyesInAfterTheFact(bmpToPost);
             break;
         }
@@ -100,25 +120,26 @@ public class SelfieStatus {
         if (processDone) {
             return true;
         }
-        status = "#autoselfie";
         detectFaces();
         setupMats(orig);
-        //Roll the dice to see which technique to use
-        Random r = new Random();
-        i1 = r.nextInt(4);
-        switch (i1) {
-        case 0:
+        waysToChange = WaysToChange.rollDice(r);
+        status = "#autoselfie " + waysToChange.toString();
+        switch (waysToChange) {
+        case CANNNY_KONNY:
             cannyKonny();
             break;
         default:
-        case 1:
+        case EIGHT_BIT_ROY:
             primaryRoy();
             break;
-        case 2:
+        case ANOTHER_ONE_FOR_LUCK:
             andAnotherOneForLuck();
             break;
-        case 3:
+        case NO_POINT_IN_HOLDING_ON:
             noPointInHoldingOn();
+            break;
+        case GLITCHY_GOODNESS_DELUXE:
+            glitchEverything();
             break;
 //        case 4:
 //            blobbyContours();
@@ -127,7 +148,6 @@ public class SelfieStatus {
         }
         Log.i("SelfieStatus", status);
         processDone = true;
-//        glitchP5 = new GlitchP5(bmpToPost);
         glitchfx = new GlitchFX(bmpToPost);
         return true;
     }
@@ -163,20 +183,19 @@ public class SelfieStatus {
         // find the eyes and make red lines
         bmpToPost = eyeRedDrips(bmpToPost);
 
-        status = "#autoselfie canny and Konny";
+//        status = "#autoselfie canny and Konny";
     }
 
 
     private void primaryRoy() {
         // black white  red yellow blue  and dots
 //        Imgproc.cvtColor(mRgba, mMatToPost, Imgproc.COLOR_RGB2GRAY, 4);
-        Random r = new Random();
         int i1 = r.nextInt(20) + 128;
         Imgproc.threshold(mRgba, mRgba, i1, 255, 0);
         bmpToPost = getImagefromMat(mRgba);
         bmpToPost = drawDots(bmpToPost);
         bmpToPost = eyeLargeBlocks(bmpToPost, 1);
-        status = "#autoselfie 8bit Roy";
+//        status = "#autoselfie 8bit Roy";
     }
 
     private void blobbyContours() {
@@ -212,7 +231,7 @@ public class SelfieStatus {
 //        mSpectrum.copyTo(spectrumLabel);
 
         bmpToPost = getImagefromMat(mRgba);
-        status = "#autoselfie blobbly Contours";
+//        status = "#autoselfie blobbly Contours";
     }
 
     private void andAnotherOneForLuck() {
@@ -224,7 +243,7 @@ public class SelfieStatus {
         Imgproc.threshold(mIntermediateMat, mRgba, i1, 255, 0);
         bmpToPost = getImagefromMat(mRgba);
         bmpToPost = eyeLargeBlocks(bmpToPost, 16);
-        status = "#autoselfie and another one for luck";
+//        status = "#autoselfie and another one for luck";
     }
 
     private void noPointInHoldingOn() {
@@ -236,17 +255,43 @@ public class SelfieStatus {
             mRgbaInnerWindow.copyTo(mGrayInnerWindow);
         }
         bmpToPost = getImagefromMat(mIntermediateMat);
-        status = "#autoselfie no point in holding on";
+//        status = "#autoselfie no point in holding on";
     }
 
     private Bitmap putEyesInAfterTheFact(Bitmap b) {
 
         Utils.bitmapToMat(b, mIntermediateMat);
         mGrayInnerWindow = setInnerMatfromEyes(mIntermediateMat);
-        mRgbaInnerWindow.copyTo(mGrayInnerWindow);
+        if (mGrayInnerWindow != null) {
+            mRgbaInnerWindow.copyTo(mGrayInnerWindow);
+        }
         bmpToPost = getImagefromMat(mIntermediateMat);
         return bmpToPost;
     }
+
+    private void glitchEverything() {
+        mRgbaInnerWindow = setInnerMatfromEyes(mRgba);
+        bmpToPost = orig.copy(orig.getConfig(), true);
+        GlitchFX tempglitchfx = new GlitchFX(bmpToPost);
+//        RectF wholePic = new RectF(0, 0, bmpToPost.getWidth(), bmpToPost.getHeight());
+//        int xjump = bmpToPost.getWidth()/16;
+        int yjump = bmpToPost.getHeight() / 16;
+        int dx = r.nextInt(yjump) - yjump / 2;
+        for (int i = 0; i < bmpToPost.getWidth(); i += 2 * yjump) {
+            RectF strip = new RectF(i, dx, i + yjump + dx, bmpToPost.getHeight() - yjump - dx);
+            glitchImage(strip, magic, tempglitchfx);
+            dx = r.nextInt(yjump * 2) - yjump;
+
+        }
+//        for (int i = 0; i < bmpToPost.getHeight(); i += 2*yjump) {
+//            RectF strip = new RectF(0, i, bmpToPost.getWidth(),i+yjump-1);
+//            glitchImage(strip, magic);
+//
+//        }
+//        glitchImage(wholePic, magic);
+//        glitchImage(wholePic, -magic);
+    }
+
 
     private Size mSize0;
     private Size mSizeRgba;
@@ -502,12 +547,19 @@ public class SelfieStatus {
     }
 
 
-    public void glitchImage(RectF bounds) {
-        if (glitchfx == null) return;
-        glitchfx.open();
-        glitchfx.glitch((int) bounds.centerX(), (int) bounds.centerY(), (int) bounds.width(), (int) bounds.height(), magic, magic);
-        glitchfx.close();
-        bmpToPost = glitchfx.getBitmap();
+    public void glitchImage(RectF bounds, int extraMagic) {
+        glitchImage(bounds, extraMagic, glitchfx);
+    }
+
+    private void glitchImage(RectF bounds, int extraMagic, GlitchFX gg) {
+        if (gg == null) return;
+        if (extraMagic == 0) {
+            extraMagic = magic;
+        }
+        gg.open();
+        gg.glitch((int) bounds.centerX(), (int) bounds.centerY(), (int) bounds.width(), (int) bounds.height(), extraMagic, extraMagic);
+        gg.close();
+        bmpToPost = gg.getBitmap();
     }
 
 

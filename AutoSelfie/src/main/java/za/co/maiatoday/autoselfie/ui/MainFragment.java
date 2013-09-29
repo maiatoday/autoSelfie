@@ -112,7 +112,11 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
 
             @Override
             public void onClick(View arg0) {
+                // debug so I don't have to get another pic but can try another algorithm
                 selfie.setProcessDone(false);
+                if (bitmap != null) {
+                    selfie.setOrig(bitmap);
+                }
                 openImageIntent();
             }
         });
@@ -257,7 +261,7 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
                 path.lineTo(event.getX(), event.getY());
                 RectF bounds = new RectF();
                 path.computeBounds(bounds, false);
-                selfie.glitchImage(convertFromViewToImage(bounds));
+                selfie.glitchImage(convertFromViewToImage(bounds), 0);
 //                bitmap = drawPath(selfie.getBmpToPost(), path, pathColor); //The path is in the wrong place
 //                imageView.setImageBitmap(selfie.getBmpToPost());
                 break;
