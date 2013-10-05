@@ -19,6 +19,7 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -45,6 +46,7 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
     private static final int REQUEST_IMAGE = 2;
     Button btnUpdateStatus;
     EditText txtUpdate;
+    private Uri shareUri;
     private ImageView imageView;
     Button btnSnap;
 
@@ -53,19 +55,34 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
     private Path path;
     private int pathColor = Color.RED;
     private boolean debugHide = true;
-    private boolean debugSaveFile = false;
-    private boolean debugTweet = true;
+    private boolean debugSaveFile = true;
+    private boolean debugTweet = false;
     private Bitmap bitmap;
     private Matrix inverseMatrix = new Matrix();
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Intent intent = getArguments().getParcelable("intent");
+
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if (type.startsWith("image/")) {
+                shareUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+            }
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
-
         setHasOptionsMenu(true);
 
         imageView = (ImageView) view.findViewById(R.id.result);
+        populateImageFromUri(shareUri);
         btnSnap = (Button) view.findViewById(R.id.btnSnap);
         // All UI elements
         btnUpdateStatus = (Button) view.findViewById(R.id.btnUpdateStatus);
@@ -226,18 +243,26 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
         } else {
             selectedImageUri = data == null ? null : data.getData();
         }
+        populateImageFromUri(selectedImageUri);
+    }
+
+    private void populateImageFromUri(Uri selectedImageUri) {
+        if (selectedImageUri == null) {
+            return;
+        }
         try {
             bitmap = ImageUtils.getSizedBitmap(getActivity(), selectedImageUri, imageView.getHeight());
-            if (bitmap != null) {
-                selfie.setOrig(bitmap);
-                imageView.setImageBitmap(bitmap);
-                Matrix matrix = imageView.getImageMatrix();
-                matrix.invert(inverseMatrix);
-            }
         } catch (Exception e) {
-
             Toast.makeText(getActivity(),
                 "Problem loading file", Toast.LENGTH_LONG).show();
+            Log.d("autoselfie", "can't load image", e);
+        }
+
+        if (bitmap != null) {
+            selfie.setOrig(bitmap);
+            imageView.setImageBitmap(bitmap);
+            Matrix matrix = imageView.getImageMatrix();
+            matrix.invert(inverseMatrix);
         }
     }
 

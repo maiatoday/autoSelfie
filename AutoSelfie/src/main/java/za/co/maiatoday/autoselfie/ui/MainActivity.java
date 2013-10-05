@@ -65,9 +65,11 @@ public class MainActivity extends ActionBarActivity implements OnTwitterRequest 
                 firstFragment = new MainFragment();
                 tag = MAIN_FRAGMENT;
 
+                Bundle args = new Bundle();
+                args.putParcelable("intent", getIntent());
                 // In case this activity was started with special instructions from an Intent,
                 // pass the Intent's extras to the fragment as arguments
-                firstFragment.setArguments(getIntent().getExtras());
+                firstFragment.setArguments(args);
 
                 // Add the fragment to the 'fragment_container' FrameLayout
                 getSupportFragmentManager().beginTransaction()
