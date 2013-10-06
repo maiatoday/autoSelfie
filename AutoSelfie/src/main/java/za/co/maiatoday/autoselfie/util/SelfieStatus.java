@@ -13,6 +13,7 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -55,12 +56,14 @@ public class SelfieStatus {
         EIGHT_BIT_ROY,
         ANOTHER_ONE_FOR_LUCK,
         NO_POINT_IN_HOLDING_ON,
-        GLITCHY_GOODNESS_DELUXE;
+        GLITCHY_GOODNESS_DELUXE,
+        LINES;
         private static final int size = WaysToChange.values().length;
 
         public static WaysToChange rollDice(Random r) {
             //Roll the dice to see which technique to use
-            return WaysToChange.values()[r.nextInt(size)];
+            return WaysToChange.values()[r.nextInt(size - 1)];
+//            return LINES;
         }
 
     }
@@ -99,6 +102,9 @@ public class SelfieStatus {
             break;
         case GLITCHY_GOODNESS_DELUXE:
             putEyesInAfterTheFact(bmpToPost);
+            break;
+        case LINES:
+            eyeDelete(bmpToPost);
             break;
         }
 
@@ -141,9 +147,9 @@ public class SelfieStatus {
         case GLITCHY_GOODNESS_DELUXE:
             glitchEverything();
             break;
-//        case 4:
-//            blobbyContours();
-//            break;
+        case LINES:
+            seeLines();
+            break;
 
         }
         Log.i("SelfieStatus", status);
@@ -175,6 +181,9 @@ public class SelfieStatus {
         }
     }
 
+    /**
+     * one of the transformation types cannyKonny
+     */
     private void cannyKonny() {
         Imgproc.Canny(mRgba, mIntermediateMat, 80, 90);
         Core.bitwise_not(mIntermediateMat, mIntermediateMat);
@@ -186,7 +195,40 @@ public class SelfieStatus {
 //        status = "#autoselfie canny and Konny";
     }
 
+    /**
+     * one of the transformation types diagonals
+     */
+    private void seeLines() {
 
+        Imgproc.cvtColor(mRgba, mIntermediateMat, Imgproc.COLOR_RGB2GRAY, 4);
+        Imgproc.Canny(mIntermediateMat, mIntermediateMat, 80, 90);
+        Mat lines = new Mat();
+        int threshold = 50;
+        int minLineSize = 1;
+        int lineGap = 20;
+
+        Imgproc.HoughLinesP(mIntermediateMat, lines, 1, Math.PI / 180, threshold, minLineSize, lineGap);
+
+        for (int x = 0; x < lines.cols() && x < 1; x++) {
+            double[] vec = lines.get(0, x);
+            double x1 = vec[0],
+                y1 = vec[1],
+                x2 = vec[2],
+                y2 = vec[3];
+            Point start = new Point(x1, y1);
+            Point end = new Point(x2, y2);
+
+            Core.line(mRgba, start, end, new Scalar(255, 0, 0), 3);
+
+        }
+
+        bmpToPost = getImagefromMat(mRgba);
+    }
+
+
+    /**
+     * one of the transformation types dots and bright colors
+     */
     private void primaryRoy() {
         // black white  red yellow blue  and dots
 //        Imgproc.cvtColor(mRgba, mMatToPost, Imgproc.COLOR_RGB2GRAY, 4);
@@ -234,6 +276,9 @@ public class SelfieStatus {
 //        status = "#autoselfie blobbly Contours";
     }
 
+    /**
+     * primary transformation types lucky colours
+     */
     private void andAnotherOneForLuck() {
         // the lucky one, orange, pink, red an yellow are lucky colours
         // eyes all catlike and spinning wheels
@@ -246,6 +291,9 @@ public class SelfieStatus {
 //        status = "#autoselfie and another one for luck";
     }
 
+    /**
+     * primary transformation types eyes on black
+     */
     private void noPointInHoldingOn() {
         mRgbaInnerWindow = setInnerMatfromEyes(mRgba);
         Imgproc.Canny(mRgba, mIntermediateMat, 80, 90);
