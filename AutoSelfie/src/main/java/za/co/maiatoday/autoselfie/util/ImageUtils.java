@@ -42,7 +42,7 @@ public class ImageUtils {
 
         int originalSize = onlyBoundsOptions.outHeight > onlyBoundsOptions.outWidth ? onlyBoundsOptions.outHeight : onlyBoundsOptions.outWidth;
 
-        double ratio = originalSize > size ? originalSize / (double) size : 1.0;
+        double ratio = size == 0 ? 1.0 : originalSize > size ? originalSize / (double) size : 1.0;
 
         BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
         bitmapOptions.inSampleSize = getPowerOfTwoForSampleRatio(ratio);

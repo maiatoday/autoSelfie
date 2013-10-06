@@ -86,7 +86,7 @@ public class SelfieStatus {
     public Bitmap getBmpToPost() {
         switch (waysToChange) {
         case CANNNY_KONNY:
-//            bmpToPost = eyeRedDrips(bmpToPost);
+            bmpToPost = eyeRedDrips(bmpToPost);
             break;
         case EIGHT_BIT_ROY:
             bmpToPost = eyeLargeBlocks(bmpToPost, 1);
@@ -181,7 +181,7 @@ public class SelfieStatus {
 
         bmpToPost = getImagefromMat(mIntermediateMat);
         // find the eyes and make red lines
-        bmpToPost = eyeRedDrips(bmpToPost);
+        // bmpToPost = eyeRedDrips(bmpToPost);
 
 //        status = "#autoselfie canny and Konny";
     }
