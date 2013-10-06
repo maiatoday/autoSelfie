@@ -239,7 +239,7 @@ public class SelfieStatus {
         // eyes all catlike and spinning wheels
         Imgproc.cvtColor(mRgba, mIntermediateMat, Imgproc.COLOR_RGB2GRAY, 4);
         Random r = new Random();
-        int i1 = r.nextInt(20) + 128;
+        int i1 = r.nextInt(20) + 80;
         Imgproc.threshold(mIntermediateMat, mRgba, i1, 255, 0);
         bmpToPost = getImagefromMat(mRgba);
         bmpToPost = eyeLargeBlocks(bmpToPost, 16);

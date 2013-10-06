@@ -21,10 +21,10 @@ import java.util.Date;
  */
 public class ImageUtils {
 
-    public static String getUniqueImageFilename() {
+    public static String getUniqueImageFilename(String extension) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
         Date now = new Date();
-        String fileName = formatter.format(now) + ".jpg";
+        String fileName = formatter.format(now) + extension;
         return fileName;
     }
 
@@ -63,7 +63,7 @@ public class ImageUtils {
     public static boolean saveBitmapToFile(Bitmap pic, Context context) {
         boolean ret = false;
         final File path = new File(Environment.getExternalStorageDirectory() + File.separator + "autoSelfie" + File.separator);
-        final String fname = getUniqueImageFilename();
+        final String fname = getUniqueImageFilename(".png");
         final File file = new File(path, fname);
 
         if (pic != null) {

@@ -187,7 +187,7 @@ public class MainFragment extends Fragment implements View.OnTouchListener {   /
 // Determine Uri of camera image to save.
         final File root = new File(Environment.getExternalStorageDirectory() + File.separator + "autoSelfie" + File.separator);
         root.mkdirs();
-        final String fname = ImageUtils.getUniqueImageFilename();
+        final String fname = ImageUtils.getUniqueImageFilename(".jpg");
         final File sdImageMainDirectory = new File(root, fname);
         outputFileUri = Uri.fromFile(sdImageMainDirectory);
 
