@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.6.3'
+        classpath 'com.android.tools.build:gradle:0.8.0'
     }
 }
 apply plugin: 'android'
@@ -11,20 +11,19 @@ apply plugin: 'android'
 repositories {
     mavenCentral()
 }
-
 android {
-    compileSdkVersion 18
-    buildToolsVersion "18.0.1"
+    compileSdkVersion 19
+    buildToolsVersion "19.0.2"
 
     defaultConfig {
         minSdkVersion 7
-        targetSdkVersion 18
+        targetSdkVersion 19
     }
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:13.0.+'
-    compile 'com.android.support:appcompat-v7:18.0.+'
+    compile 'com.android.support:support-v4:19.0.+'
+    compile 'com.android.support:appcompat-v7:19.0.+'
     compile 'org.twitter4j:twitter4j-core:3.0.3'
     compile files('libs/opencvlibrary-2.4.6.jar')
 }
